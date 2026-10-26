@@ -112,22 +112,33 @@
     @media(max-width:760px){.reviews{padding:76px 0}.reviews-grid{grid-template-columns:1fr;gap:32px}.review-form{padding:22px}.review-form .button{width:100%}}
 
 /* Short brand reveal shown when the page opens */
-.brand-intro{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:linear-gradient(110deg,rgba(20,13,9,.88),rgba(20,13,9,.45)),url('./andra-pulav-hero.png') center/cover no-repeat;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+.brand-intro{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:#160f0a;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+.intro-still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 43%;transform-origin:64% 44%;filter:none;animation:intro-still-pan 4.5s linear both}
+.brand-intro:before{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,rgba(17,11,7,.68),rgba(17,11,7,.18) 55%,rgba(17,11,7,.46)),linear-gradient(0deg,rgba(17,11,7,.5),transparent 38%,rgba(17,11,7,.24));pointer-events:none}
+.brand-intro:after{content:"";position:absolute;z-index:1;top:-15%;bottom:-15%;left:-42%;width:34%;background:linear-gradient(90deg,transparent,rgba(255,220,153,.23),transparent);transform:skewX(-15deg);animation:intro-light-sweep 2.8s .25s ease-in-out both;pointer-events:none}
 .brand-intro.is-dismissing{opacity:0;visibility:hidden;pointer-events:none}
-.intro-center{position:relative;display:grid;place-items:center;width:min(80vw,360px);aspect-ratio:1;text-align:center}
-.intro-ring{position:absolute;inset:8%;border:1px solid rgba(243,199,117,.8);border-radius:50%;animation:intro-rotate 4s linear infinite,intro-appear .8s ease both}
+.intro-center{position:relative;z-index:2;display:grid;place-items:center;width:min(80vw,360px);aspect-ratio:1;text-align:center}
+.intro-ring{position:absolute;inset:8%;border:1px solid rgba(243,199,117,.8);border-radius:50%;animation:intro-rotate 4.5s linear infinite,intro-appear .8s ease both}
 .intro-ring:before{content:"";position:absolute;inset:13px;border:1px solid rgba(255,255,255,.3);border-radius:50%}
 .intro-ring:after{content:"";position:absolute;left:50%;top:-7px;width:14px;height:14px;border-radius:50%;background:#e6bb63;box-shadow:0 0 22px rgba(230,187,99,.9)}
-.intro-wordmark{position:absolute;z-index:1;left:50%;top:50%;width:max-content;transform:translate(-50%,-50%);white-space:nowrap;font:700 clamp(38px,7vw,58px)/1 'Cormorant Garamond',Georgia,serif;letter-spacing:-.045em;color:#fff3dd;animation:intro-title .85s .2s both}
-.intro-wordmark span{color:#e6bb63;margin-left:-.1em}
+.intro-wordmark{position:absolute;z-index:1;left:50%;top:50%;width:max-content;transform:translate(-50%,-50%);white-space:nowrap;font:700 clamp(38px,7vw,58px)/1 'Cormorant Garamond',Georgia,serif;letter-spacing:-.045em;color:#fffaf0;text-shadow:0 2px 14px rgba(20,8,0,.9);animation:intro-title .85s .2s both}
+.intro-wordmark span{color:#ffdf70;margin-left:-.1em;text-shadow:0 2px 12px rgba(20,8,0,.95)}
 .intro-caption{position:absolute;left:50%;top:calc(50% + 46px);width:max-content;transform:translateX(-50%);margin:0;font:600 10px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#f5dfbb;animation:intro-title .8s .45s both}
-.intro-skip{position:absolute;right:24px;bottom:22px;padding:10px 14px;border:1px solid rgba(255,255,255,.48);border-radius:999px;background:rgba(20,13,9,.4);color:#fff;font:600 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.intro-credit{position:absolute;z-index:1;left:50%;top:calc(50% + 70px);width:max-content;max-width:88vw;transform:translateX(-50%);margin:0;color:rgba(255,243,221,.78);font:500 8px var(--sans);letter-spacing:.13em;text-transform:uppercase;animation:intro-title .8s .6s both}
+.intro-skip{position:absolute;z-index:3;right:24px;bottom:22px;padding:10px 14px;border:1px solid rgba(255,255,255,.48);border-radius:999px;background:rgba(20,13,9,.4);color:#fff;font:600 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 .intro-skip:hover,.intro-skip:focus-visible{background:#fff;color:#211913;outline:2px solid #e6bb63;outline-offset:3px}
 @keyframes intro-rotate{to{transform:rotate(360deg)}}
 @keyframes intro-appear{from{opacity:0}to{opacity:1}}
 @keyframes intro-title{from{opacity:0}to{opacity:1}}
+@keyframes intro-still-pan{from{transform:scale(1)}to{transform:scale(1.08)}}
+@keyframes intro-light-sweep{0%{transform:translateX(0) skewX(-15deg);opacity:0}20%{opacity:1}100%{transform:translateX(430%) skewX(-15deg);opacity:0}}
 @media(max-width:760px){.intro-center{width:min(76vw,300px)}.intro-wordmark{font-size:clamp(34px,9vw,48px)}.intro-skip{right:16px;bottom:16px}}
-@media(prefers-reduced-motion:reduce){.intro-ring,.intro-wordmark,.intro-caption{animation:none}.brand-intro{transition-duration:.2s}}
+@media(prefers-reduced-motion:reduce){.intro-ring,.intro-wordmark,.intro-caption,.intro-credit,.intro-still,.brand-intro:after{animation:none}.brand-intro{transition-duration:.2s}}
+@media(max-width:760px){
+  .brand-intro{height:100vh;height:100svh}
+  .intro-still{object-position:center 43%;animation:intro-still-pan-mobile 4.5s linear both!important}
+}
+@keyframes intro-still-pan-mobile{from{transform:scale(1)}to{transform:scale(1.06)}}
 
 
 /* Menu Card left-side drawer */
@@ -296,6 +307,34 @@ header .menu-toggle:hover{border-color:#c88851;background:#fff2e3;color:#a64c27}
   header .menu-toggle{width:30px;height:30px;flex-basis:30px}
 }
 
+/* Compact phone layout: fit more content on screen and prevent oversized hero/cards. */
+@media(max-width:600px){
+  .wrap{width:calc(100% - 28px)}
+  header .brand{font-size:clamp(19px,5.8vw,23px)}
+  .hero{min-height:680px}
+  .hero:before{top:350px;right:14px;width:calc(100% - 28px);height:230px}
+  .hero-content{padding-top:88px}
+  .hero h1{font-size:clamp(30px,8vw,37px);line-height:1.03;margin:17px 0 13px}
+  .hero .eyebrow{font-size:9px;letter-spacing:.17em}
+  .hero p{font-size:13px;line-height:1.65;margin-bottom:18px}
+  .hero-actions{gap:12px}
+  .hero-actions .button{padding:11px 13px;font-size:10px}
+  .hero-note{bottom:18px;font-size:10px;padding:8px 10px}
+  section{padding:58px 0}
+  #menu .section-head h2{font-size:clamp(24px,7vw,31px)}
+  .section-head{margin-bottom:24px}
+  .dish-img{height:205px}
+  .dish-copy{padding:16px}
+  .dish-title h3{font-size:20px;line-height:1.2}
+  .dish-copy p{font-size:13px;line-height:1.6}
+  .story-visual{aspect-ratio:4/3}
+  .story-copy{padding:20px 17px}
+  .story-copy h2,.review-intro h2{font-size:clamp(31px,8vw,38px)}
+  .story-copy p,.review-intro>p{font-size:13px;line-height:1.7}
+  .reviews{padding:58px 0}
+  .visit h2{font-size:36px}
+}
+
 /* Distinct selection summary and a more inviting story panel */
 #orderSummary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:24px;width:min(100%,760px);max-width:760px;min-height:104px;margin:32px auto 0;padding:20px 22px 20px 78px;border:1px solid #ead9c7;border-left:5px solid #bd5528;border-radius:12px;background:linear-gradient(115deg,#fffaf4,#fff 62%);box-shadow:0 12px 32px rgba(68,43,23,.09)}
 #orderSummary:before{content:'✦';position:absolute;left:22px;top:50%;display:grid;place-items:center;width:40px;height:40px;transform:translateY(-50%);border-radius:50%;background:#fff0dc;color:#ae6825;font-size:18px}
@@ -329,4 +368,32 @@ header .menu-toggle:hover{border-color:#c88851;background:#fff2e3;color:#a64c27}
   .story-highlight span{grid-row:1/3;margin:0}
   .story-highlight strong{font-size:12px}
   .story-highlight small{margin-top:1px}
+}
+
+/* Final small-screen overrides, after the rest of the design rules. */
+@media(max-width:600px){
+  .wrap{width:calc(100% - 28px)}
+  header .brand{font-size:clamp(19px,5.8vw,23px)}
+  .hero{min-height:680px}
+  .hero:before{top:350px;right:14px;width:calc(100% - 28px);height:230px}
+  .hero-content{padding-top:88px}
+  .hero h1{font-size:clamp(30px,8vw,37px);line-height:1.03;margin:17px 0 13px}
+  .hero .eyebrow{font-size:9px;letter-spacing:.17em}
+  .hero p{font-size:13px;line-height:1.65;margin-bottom:18px}
+  .hero-actions{gap:12px}
+  .hero-actions .button{padding:11px 13px;font-size:10px}
+  .hero-note{bottom:18px;font-size:10px;padding:8px 10px}
+  section{padding:58px 0}
+  #menu .section-head h2{font-size:clamp(24px,7vw,31px)}
+  .section-head{margin-bottom:24px}
+  .dish-img{height:205px}
+  .dish-copy{padding:16px}
+  .dish-title h3{font-size:20px;line-height:1.2}
+  .dish-copy p{font-size:13px;line-height:1.6}
+  .story-visual{aspect-ratio:4/3}
+  .story-copy{padding:20px 17px}
+  .story-copy h2,.review-intro h2{font-size:clamp(31px,8vw,38px)}
+  .story-copy p,.review-intro>p{font-size:13px;line-height:1.7}
+  .reviews{padding:58px 0}
+  .visit h2{font-size:36px}
 }
