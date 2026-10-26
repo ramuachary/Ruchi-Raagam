@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f3ed">
+  <title>Orders dashboard — Ruchi Raagam</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="index.html">Ruchi <span>Raagam</span></a>
+      <div class="top-actions"><button class="btn" id="enableNotifications" type="button">Enable notifications</button><button class="btn" id="clearCompleted" type="button">Clear completed</button></div>
+    </header>
+    <section class="heading"><div><div class="eyebrow">Restaurant operations</div><h1>Orders dashboard</h1></div><div class="date" id="today"></div></section>
+    <section class="metrics" aria-label="Order summary">
+      <div class="metric new"><span>New orders</span><strong id="newCount">0</strong></div>
+      <div class="metric"><span>In progress</span><strong id="activeCount">0</strong></div>
+      <div class="metric"><span>Pickup orders</span><strong id="pickupCount">0</strong></div>
+      <div class="metric"><span>Delivered today</span><strong id="deliveredCount">0</strong></div>
+    </section>
+    <section class="toolbar">
+      <div class="period-tabs" role="group" aria-label="Orders by period">
+        <button class="period-tab active" data-period="today" type="button">Today</button>
+        <button class="period-tab" data-period="week" type="button">This week</button>
+        <button class="period-tab" data-period="month" type="button">This month</button>
+        <button class="period-tab" data-period="all" type="button">All time</button>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Filter orders">
+        <button class="tab active" data-filter="active" type="button">Active <span id="activeBadge">0</span></button>
+        <button class="tab" data-filter="all" type="button">All orders</button>
+        <button class="tab" data-filter="completed" type="button">Completed</button>
+      </div>
+      <label><span class="sr-only">Search orders</span><input class="search" id="search" type="search" placeholder="Search name or phone"></label>
+    </section>
+    <section class="orders" id="orders" aria-live="polite"></section>
+    <p class="notice">Secure dashboard sign-in uses an email link for ruchiragam@gmail.com once Supabase is connected. Orders appear live after setup; browser notifications work while this dashboard is open and notifications are enabled.</p>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="backend-config.js" defer></script>
+  <script src="backend-client.js" defer></script>
+  <script src="dashboard.js" defer></script>
+  <script src="cloud-dashboard.js" defer></script>
+</body>
+</html>

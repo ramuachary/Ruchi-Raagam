@@ -1,11 +1,11 @@
 :root{--ink:#f8f1e5;--muted:#c6b9a6;--bg:#17130f;--panel:#211b15;--orange:#db6c32;--gold:#e5b963;--line:rgba(248,241,229,.15);--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',Arial,sans-serif}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}.wrap{width:min(1180px,calc(100% - 48px));margin:auto}
     header{position:absolute;z-index:3;top:0;left:0;width:100%;border-bottom:1px solid rgba(255,255,255,.16)}.nav{height:84px;display:flex;align-items:center;justify-content:space-between}.brand{display:inline-flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',var(--serif);font-size:36px;line-height:1;letter-spacing:-.045em;font-weight:700;margin-left:-16px;color:#4a3024}.brand span{color:#bd5528;margin-left:-.12em}.brand-mark{display:block;width:39px;height:39px;flex:0 0 39px;color:#bd5528}.brand-mark-outline{fill:#fff8ef;stroke:currentColor;stroke-width:1.6}.brand-mark-line{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.links{display:flex;align-items:center;gap:22px;color:#eee2d3;font-size:13px}.links a:hover{color:var(--gold)}.top-contact{display:flex;align-items:center;gap:4px;padding:5px;background:#fff8ef;border:1px solid #eadbc9;border-radius:999px;color:#38291f}.top-contact a{display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:999px;white-space:nowrap;font-size:10px;line-height:1.2;transition:background .2s,color .2s}.top-contact a:hover{background:#f2e3d3;color:#a8431d}.contact-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 24px;border-radius:50%;background:#bd5528;color:white;font-size:11px}.contact-value{font-weight:700;letter-spacing:.01em}.nav-cta,.button{display:inline-flex;align-items:center;justify-content:center;background:var(--orange);color:#fff8ee;padding:14px 21px;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:.2s}.nav-cta:hover,.button:hover{background:#ec7b3d;transform:translateY(-2px)}.language-toggle{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:10px 13px;font:700 11px var(--sans);cursor:pointer}.language-toggle:hover{background:var(--gold);color:var(--bg)}.menu-toggle{display:none;background:none;border:0;font-size:25px}
-    .hero{min-height:760px;display:flex;align-items:center;position:relative;overflow:hidden;background:linear-gradient(90deg,rgba(17,13,10,.94) 0%,rgba(17,13,10,.78) 42%,rgba(17,13,10,.12) 100%),url('assets/andra-pulav-hero.png') center 53%/cover no-repeat}.hero:after{content:'';position:absolute;inset:auto 0 0;height:120px;background:linear-gradient(transparent,var(--bg))}.hero-content{position:relative;z-index:1;padding-top:100px;max-width:580px}.eyebrow{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.24em;font-weight:700;display:flex;align-items:center;gap:12px}.eyebrow:before{content:'';width:34px;height:1px;background:var(--gold)}h1,h2,h3,p{margin-top:0}h1{font:600 clamp(56px,7vw,88px)/.98 var(--serif);letter-spacing:-.04em;margin:24px 0 20px}h1 em{color:var(--gold);font-weight:500}.hero p{font-size:16px;line-height:1.8;color:#d4c7b7;max-width:430px;margin-bottom:32px}.hero-actions{display:flex;align-items:center;gap:24px}.text-link{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}.text-link span{color:var(--gold);padding-left:8px}.hero-note{position:absolute;z-index:2;bottom:102px;right:max(24px,calc((100% - 1180px)/2));display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.05em;color:#f6ebda}.note-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 12px var(--gold)}
+    .hero{min-height:760px;display:flex;align-items:center;position:relative;overflow:hidden;background:linear-gradient(90deg,rgba(17,13,10,.94) 0%,rgba(17,13,10,.78) 42%,rgba(17,13,10,.12) 100%),url('./andra-pulav-hero.png') center 53%/cover no-repeat}.hero:after{content:'';position:absolute;inset:auto 0 0;height:120px;background:linear-gradient(transparent,var(--bg))}.hero-content{position:relative;z-index:1;padding-top:100px;max-width:580px}.eyebrow{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.24em;font-weight:700;display:flex;align-items:center;gap:12px}.eyebrow:before{content:'';width:34px;height:1px;background:var(--gold)}h1,h2,h3,p{margin-top:0}h1{font:600 clamp(56px,7vw,88px)/.98 var(--serif);letter-spacing:-.04em;margin:24px 0 20px}h1 em{color:var(--gold);font-weight:500}.hero p{font-size:16px;line-height:1.8;color:#d4c7b7;max-width:430px;margin-bottom:32px}.hero-actions{display:flex;align-items:center;gap:24px}.text-link{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}.text-link span{color:var(--gold);padding-left:8px}.hero-note{position:absolute;z-index:2;bottom:102px;right:max(24px,calc((100% - 1180px)/2));display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.05em;color:#f6ebda}.note-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 12px var(--gold)}
     .ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0;color:var(--gold);font-family:var(--serif);font-size:17px;letter-spacing:.04em;white-space:nowrap;overflow:hidden}.ticker-inner{display:flex;justify-content:space-around;gap:25px}.ticker b{color:var(--orange);font-size:13px}
     section{padding:108px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:38px}.section-head .eyebrow{margin-bottom:14px}#menu .section-head>div{min-width:0}#menu .section-head .section-intro{flex:0 0 32%;max-width:none}#menu .section-head h2{white-space:nowrap;font-size:clamp(26px,4.8vw,50px)}h2{font:600 clamp(38px,5vw,58px)/1.04 var(--serif);letter-spacing:-.03em;margin-bottom:0}.section-intro{max-width:365px;color:var(--muted);font-size:14px;line-height:1.75;margin:0 0 5px}.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.dish{background:var(--panel);border:1px solid var(--line);overflow:hidden;transition:.25s}.dish:hover{transform:translateY(-5px);border-color:rgba(229,185,99,.55)}.dish-img{height:255px;overflow:hidden;position:relative}.dish-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}.dish:hover .dish-img img{transform:scale(1.04)}.dish-tag{position:absolute;top:15px;left:15px;background:#17130fe8;color:var(--gold);padding:8px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}.dish-copy{padding:22px 22px 23px}.dish-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.dish-title h3{font:600 22px var(--serif);margin:0}.price{color:var(--gold);font-size:14px;font-weight:700}.dish-copy p{color:var(--muted);font-size:12px;line-height:1.6;margin:10px 0 0}.menu-action{text-align:center;margin-top:34px}
     .story{background:#eee4d5;color:#211913}.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:center}.story-visual{position:relative;height:490px}.story-visual img{width:82%;height:100%;object-fit:cover}.story-badge{position:absolute;right:0;bottom:30px;background:var(--orange);color:white;width:154px;height:154px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:500 19px/1.1 var(--serif);transform:rotate(8deg)}.story-badge small{font:700 9px var(--sans);letter-spacing:.15em;text-transform:uppercase;margin-top:8px}.story .eyebrow{color:#a34b23}.story .eyebrow:before{background:#a34b23}.story-copy h2{margin:18px 0 20px}.story-copy p{color:#65594e;font-size:14px;line-height:1.9}.story-copy .button{margin-top:14px}
-    .quote{padding:90px 0;text-align:center;background:linear-gradient(rgba(23,19,15,.88),rgba(23,19,15,.92)),url('assets/andra-pulav-hero.png') center 65%/cover}.quote .eyebrow{justify-content:center}.quote .eyebrow:before{display:none}.quote blockquote{font:500 clamp(27px,4vw,42px)/1.25 var(--serif);max-width:800px;margin:24px auto}.quote cite{font-size:11px;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-style:normal}
+    .quote{padding:90px 0;text-align:center;background:linear-gradient(rgba(23,19,15,.88),rgba(23,19,15,.92)),url('./andra-pulav-hero.png') center 65%/cover}.quote .eyebrow{justify-content:center}.quote .eyebrow:before{display:none}.quote blockquote{font:500 clamp(27px,4vw,42px)/1.25 var(--serif);max-width:800px;margin:24px auto}.quote cite{font-size:11px;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-style:normal}
     .visit{display:grid;grid-template-columns:1fr 1fr;gap:80px}.visit h2{margin:17px 0}.visit-copy>p{color:var(--muted);font-size:14px;line-height:1.8}.visit-details{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:30px 0}.detail-label{color:var(--gold);font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}.detail{font-size:13px;line-height:1.7;color:var(--muted)}.visit-card{background:var(--panel);padding:34px;border:1px solid var(--line)}.visit-card h3{font:500 28px var(--serif);margin-bottom:10px}.visit-card p{color:var(--muted);font-size:13px;line-height:1.7}.form-row{display:flex;gap:10px;margin-top:22px}.form-row input{min-width:0;flex:1;background:#17130f;border:1px solid var(--line);padding:13px;color:var(--ink);font:13px var(--sans)}.form-row input:focus{outline:1px solid var(--gold)}.form-row button{border:0;cursor:pointer}.form-note{min-height:18px;color:var(--gold);font-size:12px;margin:10px 0 0}
     footer{border-top:1px solid var(--line);padding:28px 0;color:#958879;font-size:11px}.foot{display:flex;align-items:center;justify-content:space-between}.foot .brand{color:var(--ink);font-size:20px}.footer-contact{display:flex;gap:16px;flex-wrap:wrap}.footer-contact a{color:inherit}.footer-contact a:hover{color:var(--gold)}.social{display:flex;gap:22px}.social a:hover{color:var(--gold)}
     @media(max-width:760px){.wrap{width:min(100% - 36px,560px)}.nav{height:72px}.brand{font-size:28px;margin-left:0;gap:5px}.brand-mark{width:32px;height:32px;flex-basis:32px}.brand span{margin-left:-.1em}.links{display:none;position:absolute;top:71px;left:0;right:0;background:#17130f;padding:24px;flex-direction:column;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line)}.links.open{display:flex}.language-toggle{padding:8px 9px;font-size:10px}.top-contact{position:absolute;top:72px;left:0;right:0;z-index:4;justify-content:center;gap:6px;padding:8px 10px;background:rgba(255,248,239,.98);border:0;border-bottom:1px solid #eadbc9;border-radius:0}.top-contact a{padding:4px 7px;font-size:9px}.contact-icon{width:21px;height:21px;flex-basis:21px}.nav-cta{margin-left:auto;margin-right:7px;padding:9px 8px;font-size:9px}.menu-toggle{display:block}.hero{min-height:700px;background-position:60% center}.hero-content{padding-top:118px}.hero p{font-size:14px;max-width:350px}.hero-note{bottom:76px;left:18px;right:auto}.ticker-inner{justify-content:flex-start;min-width:850px}.ticker{padding:14px 0}.ticker-inner span{font-size:15px}.section-head{display:block}#menu .section-head h2{font-size:clamp(22px,6.5vw,34px)}#menu .section-head .section-intro{margin-top:18px}.section-intro{margin-top:18px}.menu-grid{grid-template-columns:1fr;gap:16px}.dish-img{height:260px}section{padding:78px 0}.story-grid,.visit{grid-template-columns:1fr;gap:38px}.story-visual{height:380px}.story-visual img{width:88%}.story-badge{width:125px;height:125px;font-size:16px}.visit-details{gap:18px}.form-row{flex-direction:column}.form-row button{min-height:46px}.foot{gap:18px;flex-wrap:wrap}.footer-contact{order:3;width:100%;gap:12px}.social{order:4;width:100%}}
@@ -16,7 +16,7 @@
     header{background:rgba(255,255,255,.97);border-bottom-color:var(--line)}
     .links{color:#4f4439}.links a:hover{color:var(--orange)}
     .hero{background:#fff;color:var(--ink)}
-    .hero:before{content:"";position:absolute;z-index:0;top:112px;right:max(24px,calc((100% - 1180px)/2));width:min(58%,720px);height:72%;background:url('assets/andra-pulav-hero.png') center 54%/cover no-repeat;border-radius:2px}
+    .hero:before{content:"";position:absolute;z-index:0;top:112px;right:max(24px,calc((100% - 1180px)/2));width:min(58%,720px);height:72%;background:url('./andra-pulav-hero.png') center 54%/cover no-repeat;border-radius:2px}
     .hero:after{z-index:0;height:120px;background:linear-gradient(transparent,#fff)}
     .hero-content{z-index:2;width:40%;max-width:480px}.hero h1{font-size:clamp(44px,4.8vw,62px)}
     .hero .eyebrow{color:var(--orange)}.hero .eyebrow:before{background:var(--orange)}
@@ -50,7 +50,7 @@
     .hero-note{bottom:92px;border:1px solid rgba(45,31,20,.12);border-radius:3px;box-shadow:0 8px 25px rgba(45,31,20,.1);backdrop-filter:blur(8px)}
     @media(max-width:760px){.hero{min-height:900px}.hero:before{top:510px;right:18px;width:calc(100% - 36px);height:270px;border-radius:7px;box-shadow:-9px 9px 0 #f4e7d8,0 18px 40px rgba(45,31,20,.14)}.hero-content{padding-top:100px;width:auto;max-width:none}.hero h1{font-size:clamp(46px,10.5vw,60px);max-width:480px}.hero p{max-width:360px}.hero-note{bottom:62px;left:18px;right:auto}}
     /* Full-bleed biryani hero with readable copy over the photo */
-    .hero{min-height:760px;background:linear-gradient(90deg,rgba(18,12,8,.82) 0%,rgba(18,12,8,.68) 39%,rgba(18,12,8,.23) 100%),url('assets/andra-pulav-hero.png') center 54%/cover no-repeat;color:#fff}
+    .hero{min-height:760px;background:linear-gradient(90deg,rgba(18,12,8,.82) 0%,rgba(18,12,8,.68) 39%,rgba(18,12,8,.23) 100%),url('./andra-pulav-hero.png') center 54%/cover no-repeat;color:#fff}
     .hero:before{display:none}
     .hero:after{height:90px;background:linear-gradient(transparent,rgba(18,12,8,.28))}
     .hero-content{width:46%;max-width:560px;padding-top:100px}
@@ -62,7 +62,7 @@
     .hero-actions .text-link{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.55)}
     .hero-actions .text-link span{color:#f2c16b}
     .hero-note{color:#fff;background:rgba(25,18,13,.72);border-color:rgba(255,255,255,.24);box-shadow:0 8px 25px rgba(0,0,0,.2)}
-    @media(max-width:760px){.hero{min-height:900px;background-image:linear-gradient(180deg,rgba(18,12,8,.78) 0%,rgba(18,12,8,.61) 48%,rgba(18,12,8,.33) 100%),url('assets/andra-pulav-hero.png');background-position:center 55%}.hero-content{width:auto;max-width:none;padding-top:105px}.hero h1{font-size:clamp(46px,10.5vw,60px)}.hero-note{bottom:44px;left:18px;right:auto}}
+    @media(max-width:760px){.hero{min-height:900px;background-image:linear-gradient(180deg,rgba(18,12,8,.78) 0%,rgba(18,12,8,.61) 48%,rgba(18,12,8,.33) 100%),url('./andra-pulav-hero.png');background-position:center 55%}.hero-content{width:auto;max-width:none;padding-top:105px}.hero h1{font-size:clamp(46px,10.5vw,60px)}.hero-note{bottom:44px;left:18px;right:auto}}
     .hero-content{width:100%;max-width:1120px}
     .hero h1{white-space:nowrap;font-size:clamp(34px,5.8vw,70px);letter-spacing:-.055em}
     @media(max-width:760px){.hero h1{font-size:clamp(16px,5.2vw,32px);letter-spacing:-.055em}}
@@ -112,7 +112,7 @@
     @media(max-width:760px){.reviews{padding:76px 0}.reviews-grid{grid-template-columns:1fr;gap:32px}.review-form{padding:22px}.review-form .button{width:100%}}
 
 /* Short brand reveal shown when the page opens */
-.brand-intro{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:linear-gradient(110deg,rgba(20,13,9,.88),rgba(20,13,9,.45)),url('assets/andra-pulav-hero.png') center/cover no-repeat;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+.brand-intro{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:linear-gradient(110deg,rgba(20,13,9,.88),rgba(20,13,9,.45)),url('./andra-pulav-hero.png') center/cover no-repeat;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
 .brand-intro.is-dismissing{opacity:0;visibility:hidden;pointer-events:none}
 .intro-center{position:relative;display:grid;place-items:center;width:min(80vw,360px);aspect-ratio:1;text-align:center}
 .intro-ring{position:absolute;inset:8%;border:1px solid rgba(243,199,117,.8);border-radius:50%;animation:intro-rotate 4s linear infinite,intro-appear .8s ease both}
@@ -159,3 +159,174 @@ body.menu-drawer-open{overflow:hidden}
 .checkout-form .payment-option{width:100%;box-sizing:border-box;min-height:48px;padding:10px 14px;justify-content:flex-start;text-align:left}
 .checkout-form .payment-option input[type="radio"]{width:auto;flex:0 0 auto;margin:0;padding:0;border:0}
 .bank-symbol{color:#526c8a}
+
+/* Mobile layout and navigation fixes */
+@media(max-width:760px){
+  header{z-index:30}
+  .nav{position:relative;min-height:68px;height:auto;padding-block:8px;gap:8px;justify-content:space-between}
+  .brand{font-size:clamp(21px,6vw,27px);gap:4px;margin:0;white-space:nowrap;flex:0 1 auto}
+  .brand-mark{width:27px;height:27px;flex-basis:27px}
+  .top-contact{display:none}
+  .nav-cta{margin:0;padding:9px 8px;font-size:9px;letter-spacing:.035em;white-space:nowrap;flex:0 0 auto}
+  .language-toggle{padding:8px 8px;font-size:10px;white-space:nowrap;flex:0 0 auto}
+  .menu-toggle{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;position:relative;z-index:7;padding:0;color:var(--ink);cursor:pointer}
+  .links{display:none;position:absolute;top:100%;left:-18px;right:-18px;width:calc(100% + 36px);z-index:6;padding:14px 18px 18px;flex-direction:column;gap:0;align-items:stretch;background:#fff;color:#38291f;border-bottom:1px solid var(--line);box-shadow:0 12px 22px rgba(40,28,18,.1)}
+  .links.open{display:flex}
+  .links a{display:block;padding:12px 4px;font-size:14px;border-bottom:1px solid var(--line)}
+  .links a:last-child{border-bottom:0}
+  .hero{min-height:780px}
+  .hero-content{width:100%;max-width:none;padding-top:118px}
+  .hero h1{max-width:100%;white-space:normal;font-size:clamp(34px,9vw,48px);line-height:1.04;overflow-wrap:normal}
+  .hero p{max-width:100%;font-size:14px}
+  .hero-actions{flex-wrap:wrap;gap:14px}
+  #menu .section-head h2{white-space:normal;font-size:clamp(28px,8vw,38px);line-height:1.05}
+  #menu .section-head .section-intro{max-width:none}
+  .menu-grid{grid-template-columns:minmax(0,1fr)}
+  .dish{min-width:0}
+  .dish-title{align-items:flex-start}
+  .dish-title h3{min-width:0;overflow-wrap:anywhere}
+  .portion-picker label{align-items:flex-start;flex-wrap:wrap}
+  .portion-select{max-width:100%}
+  .checkout-panel{width:100%;min-width:0}
+  .payment-method{min-width:0;padding:13px}
+  .checkout-form .payment-option{min-width:0}
+  .story-grid,.reviews-grid,.visit{grid-template-columns:minmax(0,1fr);gap:28px}
+  .story-copy{min-width:0;padding:20px}
+  .story-copy h2,.review-intro h2{font-size:clamp(34px,9vw,44px)}
+  .visit-card{min-width:0;padding:22px}
+  .visit-details{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .foot{align-items:flex-start}
+  .footer-contact{min-width:0;overflow-wrap:anywhere}
+}
+@media(max-width:370px){
+  .nav{gap:5px}
+  .brand{font-size:20px;gap:2px}
+  .brand-mark{width:23px;height:23px;flex-basis:23px}
+  .nav-cta{font-size:8px;padding:8px 6px}
+  .language-toggle{font-size:9px;padding:7px 6px}
+  .menu-toggle{width:32px;height:34px;flex-basis:32px}
+}
+/* Keep a direct Menu Card action visible on tablets and phones */
+.mobile-menu-card{display:none}
+@media(max-width:1100px){
+  header{z-index:30}
+  .nav{position:relative;min-height:68px;height:auto;padding-block:8px;gap:10px;justify-content:space-between}
+  .brand{font-size:clamp(22px,4vw,30px);margin:0;white-space:nowrap}
+  .top-contact{display:none}
+  .mobile-menu-card{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid var(--orange);padding:9px 10px;color:var(--orange);font-size:11px;font-weight:700}
+  #menuCardLink{display:none!important}
+  .links{display:none;position:absolute;top:100%;left:-18px;right:-18px;width:calc(100% + 36px);z-index:6;padding:12px 18px;background:#fff;color:#38291f;border-bottom:1px solid var(--line);box-shadow:0 12px 22px rgba(40,28,18,.1);flex-direction:column;gap:0;align-items:stretch}
+  .links.open{display:flex}
+  .links a{display:block;padding:12px 4px;font-size:14px;border-bottom:1px solid var(--line)}
+  .links a:last-child{border-bottom:0}
+  .menu-toggle{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;position:relative;z-index:7;padding:0;color:var(--ink);cursor:pointer}
+}
+@media(max-width:480px){
+  .nav-cta{display:none}
+  .nav{gap:7px}
+  .brand{font-size:clamp(20px,6vw,25px)}
+  .mobile-menu-card{padding:8px;font-size:10px}
+}
+
+/* Signature restaurant header */
+header{background:#fff;border-bottom:1px solid #eadfd2;box-shadow:0 8px 24px rgba(46,31,20,.06);backdrop-filter:blur(12px)}
+.nav{gap:18px}
+header .brand{position:relative;margin:0;padding-bottom:12px;font-size:clamp(27px,3vw,35px);letter-spacing:-.055em;color:#30231b}
+header .brand:after{content:'ANDHRA KITCHEN · MADE FRESH';position:absolute;left:48px;bottom:0;color:#9b7652;font:700 7px/1 var(--sans);letter-spacing:.2em;white-space:nowrap}
+header .brand-mark{color:#a95d30}
+header .links{gap:8px;color:#514337}
+header .links a{padding:10px 13px;border:1px solid transparent;border-radius:999px;font-size:12px;font-weight:600;transition:background .18s,border-color .18s,color .18s}
+header .links a:hover{border-color:#ead8c5;background:#fff7ed;color:#a64c27}
+header .links a#menuCardLink{border-color:#e9d2bb;background:#fff7ed;color:#985021}
+header .top-contact{padding:4px;border-color:#eadbc9;background:#fffaf4;box-shadow:0 3px 10px rgba(60,39,22,.04)}
+header .language-toggle{border:1px solid #e3c79f;border-radius:999px;background:#fffaf3;color:#965b20;padding:10px 15px;transition:.18s}
+header .language-toggle:hover{background:#f6e6cf;color:#754313}
+header .nav-cta{border-radius:999px;padding:13px 20px;background:#b95127;box-shadow:0 5px 14px rgba(185,81,39,.16);letter-spacing:.07em}
+header .nav-cta:hover{background:#a94622;transform:translateY(-1px)}
+header .mobile-menu-card{position:relative;gap:7px;border:1px solid #e9d2bb;border-radius:999px;background:#fff7ed;color:#985021;padding:10px 14px;font-size:11px;box-shadow:0 3px 9px rgba(60,39,22,.04);transition:.18s}
+header .mobile-menu-card:before{content:'✦';color:#ba792d;font-size:12px}
+header .mobile-menu-card:hover{border-color:#d8b58e;background:#fdf0df;transform:translateY(-1px)}
+header .menu-toggle{width:40px;height:40px;flex-basis:40px;border:1px solid #e8ddd1;border-radius:50%;background:#fffaf4;color:#49382b;font-size:20px;line-height:1;transition:.18s}
+header .menu-toggle:hover{border-color:#c88851;background:#fff2e3;color:#a64c27}
+@media(max-width:1100px){
+  header .nav{gap:clamp(7px,1.4vw,14px)}
+  header .brand{font-size:clamp(24px,3.5vw,32px);padding-bottom:11px}
+  header .brand:after{left:35px;font-size:6px;letter-spacing:.16em}
+  header .mobile-menu-card{padding:9px 12px}
+  header .nav-cta{padding:11px 15px}
+  header .language-toggle{padding:9px 12px}
+}
+@media(max-width:480px){
+  header .brand{font-size:clamp(20px,6vw,25px);padding-bottom:10px}
+  header .brand:after{left:30px;font-size:5.5px;letter-spacing:.13em}
+  header .mobile-menu-card{padding:8px 9px;font-size:10px}
+  header .menu-toggle{width:35px;height:35px;flex-basis:35px}
+}
+/* Contact details stay visible in the compact header */
+@media(max-width:1100px){
+  header .nav{gap:clamp(5px,.8vw,9px)}
+  header .top-contact{display:flex;position:static;z-index:auto;min-width:0;flex:0 1 auto;gap:1px;padding:3px;border:1px solid #eadbc9;border-radius:999px;background:#fffaf4;box-shadow:0 3px 10px rgba(60,39,22,.04)}
+  header .top-contact a{gap:5px;padding:4px 6px;font-size:9px}
+  header .top-contact .contact-icon{width:20px;height:20px;flex-basis:20px;font-size:9px}
+}
+@media(max-width:760px){
+  header .nav{flex-wrap:wrap;row-gap:6px}
+  header .brand{order:1}
+  header .mobile-menu-card{order:2}
+  header .language-toggle{order:3}
+  header .nav-cta{order:4}
+  header .menu-toggle{order:5}
+  header .top-contact{order:6;width:100%;flex:0 0 100%;justify-content:center;border-radius:8px}
+  header .top-contact a{padding:4px 8px;font-size:9px}
+  .hero-content{padding-top:145px}
+}
+@media(max-width:480px){
+  header .top-contact{justify-content:space-around;gap:0}
+  header .top-contact a{gap:4px;padding:4px 3px;font-size:8px}
+  header .top-contact .contact-icon{width:18px;height:18px;flex-basis:18px}
+  .hero-content{padding-top:145px}
+}
+@media(max-width:370px){
+  header .nav{gap:5px}
+  header .brand{font-size:18px}
+  header .brand-mark{width:20px;height:20px;flex-basis:20px}
+  header .brand:after{display:none}
+  header .mobile-menu-card{font-size:9px;padding:7px}
+  header .language-toggle{font-size:9px;padding:6px 7px}
+  header .menu-toggle{width:30px;height:30px;flex-basis:30px}
+}
+
+/* Distinct selection summary and a more inviting story panel */
+#orderSummary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:24px;width:min(100%,760px);max-width:760px;min-height:104px;margin:32px auto 0;padding:20px 22px 20px 78px;border:1px solid #ead9c7;border-left:5px solid #bd5528;border-radius:12px;background:linear-gradient(115deg,#fffaf4,#fff 62%);box-shadow:0 12px 32px rgba(68,43,23,.09)}
+#orderSummary:before{content:'✦';position:absolute;left:22px;top:50%;display:grid;place-items:center;width:40px;height:40px;transform:translateY(-50%);border-radius:50%;background:#fff0dc;color:#ae6825;font-size:18px}
+#orderCount{color:#49382c;font-size:13px;font-weight:700}
+#orderCount:before{content:'YOUR SELECTION';display:block;margin-bottom:6px;color:#a36c38;font-size:9px;letter-spacing:.16em;font-weight:700}
+#orderSummary>span:nth-child(2){white-space:nowrap}
+#orderSummary .summary-label{display:block;margin-bottom:3px;color:#867567;font-size:10px;letter-spacing:.11em;text-transform:uppercase}
+#orderTotal{color:#b95127;font-size:22px;letter-spacing:-.03em}
+#orderSummary .checkout-open{min-height:46px;padding-inline:20px;border-radius:5px;box-shadow:0 5px 12px rgba(185,81,39,.16);white-space:nowrap}
+.story{background:linear-gradient(135deg,#fff8ef 0%,#fff 72%)}
+.story-copy{position:relative;padding:34px;background:linear-gradient(145deg,#fff 0%,#fffaf4 100%);border:1px solid #eadfd2;border-radius:14px;box-shadow:0 18px 42px rgba(58,39,23,.08);overflow:hidden}
+.story-copy:before{content:'';position:absolute;top:0;left:34px;width:62px;height:3px;background:#bd5528;border-radius:0 0 3px 3px}
+.story-copy .eyebrow{display:inline-flex;padding:8px 11px;border-radius:999px;background:#fff1df;color:#a34b23;font-size:9px;letter-spacing:.18em}
+.story-copy h2{margin:17px 0 14px;font-size:clamp(38px,4.1vw,53px);line-height:1.02;letter-spacing:-.045em}
+.story-copy p{font-size:14px;line-height:1.8;color:#5e4c3e}
+.story-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0 8px}
+.story-highlight{min-width:0;padding:11px 10px;border:1px solid #eee2d4;border-radius:8px;background:rgba(255,255,255,.78)}
+.story-highlight span{display:block;margin-bottom:6px;color:#b95127;font-size:9px;font-weight:700;letter-spacing:.13em}
+.story-highlight strong{display:block;color:#32251d;font-size:11px;line-height:1.35}
+.story-highlight small{display:block;margin-top:4px;color:#806f60;font-size:9px;line-height:1.4}
+.story-copy .button{margin-top:14px;border-radius:5px}
+@media(max-width:760px){
+  #orderSummary{grid-template-columns:minmax(0,1fr) auto;gap:12px 8px;min-height:0;margin-top:24px;padding:18px 15px 16px 62px}
+  #orderSummary:before{left:13px;width:36px;height:36px}
+  #orderSummary .checkout-open{grid-column:1/-1;width:100%}
+  #orderTotal{font-size:20px}
+  .story-copy{padding:23px 20px}
+  .story-copy:before{left:20px}
+  .story-highlights{grid-template-columns:1fr;gap:7px}
+  .story-highlight{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:8px;align-items:center;padding:9px 11px}
+  .story-highlight span{grid-row:1/3;margin:0}
+  .story-highlight strong{font-size:12px}
+  .story-highlight small{margin-top:1px}
+}
