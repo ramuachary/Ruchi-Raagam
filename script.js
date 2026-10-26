@@ -131,9 +131,14 @@ const languageCopy=[
 
 const brandIntro=document.getElementById('brandIntro');
 if(brandIntro){
-  const dismissIntro=()=>{brandIntro.classList.add('is-dismissing');window.setTimeout(()=>brandIntro.remove(),700)};
-  const introTimer=window.setTimeout(dismissIntro,4000);
+  let introTimer;
+  let introTimerStarted=false;
+  let dismissed=false;
+  const dismissIntro=()=>{if(dismissed)return;dismissed=true;brandIntro.classList.add('is-dismissing');window.setTimeout(()=>brandIntro.remove(),700)};
+  const startIntroTimer=()=>{if(introTimerStarted||dismissed)return;introTimerStarted=true;introTimer=window.setTimeout(dismissIntro,4500)};
+  const introStill=brandIntro.querySelector('.intro-still');
+  if(introStill&&!introStill.complete){introStill.addEventListener('load',startIntroTimer,{once:true});introStill.addEventListener('error',startIntroTimer,{once:true});window.setTimeout(startIntroTimer,8000)}
+  else startIntroTimer();
   document.getElementById('skipIntro').addEventListener('click',()=>{window.clearTimeout(introTimer);dismissIntro()});
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){window.clearTimeout(introTimer);dismissIntro()}
 }
 
