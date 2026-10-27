@@ -11,9 +11,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="dashboard-embed.css">
+  <link rel="stylesheet" href="customer-auth.css">
   <style>#openDashboard{display:none!important}</style>
 </head>
 <body>
+  <section class="customer-auth" id="customerAuth" hidden aria-labelledby="customerAuthTitle">
+    <div class="customer-auth-card">
+      <a class="customer-auth-brand" href="#top">Ruchi <span>Raagam</span></a>
+      <div class="eyebrow">WELCOME TO RUCHI RAAGAM</div>
+      <h1 id="customerAuthTitle">Sign in to continue</h1>
+      <p class="customer-auth-intro">Create an account or sign in to place and track your orders.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Account access">
+        <button type="button" class="is-selected" id="authSignInTab" role="tab" aria-selected="true">Sign in</button>
+        <button type="button" id="authCreateTab" role="tab" aria-selected="false">Create account</button>
+      </div>
+      <div class="auth-methods" role="tablist" aria-label="Choose sign-in method">
+        <button type="button" class="is-selected" id="authEmailTab" role="tab" aria-selected="true">Email</button>
+        <button type="button" id="authPhoneTab" role="tab" aria-selected="false">Phone</button>
+      </div>
+      <form id="customerEmailForm" class="customer-auth-form">
+        <label id="authNameWrap" hidden>Full name<input name="name" autocomplete="name" placeholder="Your name"></label>
+        <label>Email address<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></label>
+        <button class="button" id="emailAuthSubmit" type="submit">Sign in with email</button>
+      </form>
+      <form id="customerPhoneForm" class="customer-auth-form" hidden>
+        <label>Mobile number<input name="phone" type="tel" autocomplete="tel" required placeholder="+91 98765 43210" pattern="\+[1-9][0-9]{7,14}" title="Include country code, for example +919876543210"></label>
+        <label id="authOtpWrap" hidden>SMS code<input name="token" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="8" placeholder="Enter verification code"></label>
+        <button class="button" id="phoneAuthSubmit" type="submit">Send verification code</button>
+        <p class="auth-small">Use international format, including country code (example: +91).</p>
+      </form>
+      <p class="auth-message" id="customerAuthMessage" role="status" aria-live="polite"></p>
+      <p class="auth-setup" id="customerAuthSetup" hidden>Customer sign-in will be available after the site owner connects Supabase Auth and enables email and phone sign-in.</p>
+    </div>
+  </section>
+  <div class="customer-account" id="customerAccount" hidden><span id="customerAccountLabel"></span><button type="button" id="customerSignOut">Sign out</button></div>
   <div class="brand-intro" id="brandIntro" role="region" aria-label="Ruchi Raagam welcome animation">
     <img class="intro-still" src="./mayabazar-vivaha-bhojanambu-biryani.png" alt="Colorized Mayabazar-inspired feast poster with biryani in the foreground">
     <div class="intro-center">
@@ -103,11 +135,16 @@
   </section>
   <script src="backend-config.js" defer></script>
   <script src="backend-client.js" defer></script>
+  <script src="customer-auth.js" defer></script>
+  <script src="order-tracking.js" defer></script>
   <script src="script.js" defer></script>
   <script src="checkout-heading.js" defer></script>
   <script src="order-store.js" defer></script>
   <script src="dashboard.js" defer></script>
   <script src="cloud-dashboard.js" defer></script>
   <script src="order-email.js" defer></script>
+  <script src="newsletter.js" defer></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+  <script src="razorpay-checkout.js" defer></script>
 </body>
 </html>
