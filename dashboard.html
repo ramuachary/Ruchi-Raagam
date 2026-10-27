@@ -28,9 +28,10 @@
         <button class="period-tab" data-period="all" type="button">All time</button>
       </div>
       <div class="tabs" role="tablist" aria-label="Filter orders">
-        <button class="tab active" data-filter="active" type="button">Active <span id="activeBadge">0</span></button>
-        <button class="tab" data-filter="all" type="button">All orders</button>
-        <button class="tab" data-filter="completed" type="button">Completed</button>
+        <button class="tab active" data-filter="all" type="button">All status <span id="activeBadge">0</span></button>
+        <button class="tab" data-filter="out_for_delivery" type="button">On delivery</button>
+        <button class="tab" data-filter="delivered" type="button">Delivered</button>
+        <button class="tab" data-filter="cancelled" type="button">Cancelled</button>
       </div>
       <label><span class="sr-only">Search orders</span><input class="search" id="search" type="search" placeholder="Search name or phone"></label>
     </section>
