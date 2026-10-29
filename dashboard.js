@@ -1,11 +1,24 @@
 (() => {
   const KEY = 'ruchi-raagam-orders-v1';
   const labels = { new: 'New', accepted: 'Accepted', preparing: 'Preparing', ready: 'Ready', out_for_delivery: 'Out for delivery', picked_up: 'Picked up', delivered: 'Delivered', cancelled: 'Cancelled' };
+  const paymentStatusLabels = { unpaid: 'Payment pending', paid: 'Payment accepted', failed: 'Cancelled / failed', refunded: 'Refunded' };
   const terminal = new Set(['delivered', 'picked_up', 'cancelled']);
   const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value || 0));
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
   const save = orders => { try { localStorage.setItem(KEY, JSON.stringify(orders)); window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: orders })); } catch { toast('Could not save orders in this browser.'); } };
+  const acceptExpiredOrders = () => {
+    const orders = load();
+    const nowMs = Date.now();
+    let changed = false;
+    const updated = orders.map(order => {
+      if (order.status !== 'new' || !order.createdAt || nowMs - new Date(order.createdAt).getTime() < 30_000) return order;
+      changed = true;
+      return { ...order, status: 'accepted', updatedAt: new Date(nowMs).toISOString() };
+    });
+    if (changed) save(updated);
+    return changed;
+  };
   const ordersEl = document.getElementById('orders');
   const toastEl = document.getElementById('toast');
   const dashboardView = document.getElementById('dashboardView');
@@ -109,10 +122,12 @@
       const address = order.fulfillment === 'pickup' ? 'Customer pickup' : [order.customer?.address, order.customer?.landmark && `Near ${order.customer.landmark}`, order.customer?.pincode && `PIN ${order.customer.pincode}`].filter(Boolean).join(' · ');
       const paymentProviders = { razorpay: 'Razorpay', paytm: 'Paytm UPI', gpay: 'Google Pay', icici: 'ICICI Netbanking', hdfc: 'HDFC Netbanking' };
       const basePaymentName = order.payment === 'razorpay' ? (paymentProviders[order.paymentProvider] || 'Razorpay') : ({ cod: 'Cash on delivery', upi: 'UPI', phonepe: 'PhonePe', internetbanking: 'Internet Banking' })[order.payment] || order.payment || 'Cash on delivery';
-      const paymentName = order.payment === 'razorpay' ? `${basePaymentName} · ${order.paymentStatus === 'paid' ? 'Paid' : 'Payment pending'}` : basePaymentName;
+      const paymentStatus = order.paymentStatus || 'unpaid';
+      const paymentMethodClass = ({ cod: 'method-cod', upi: 'method-upi', phonepe: 'method-phonepe', internetbanking: 'method-bank', razorpay: 'method-razorpay' })[order.payment] || 'method-other';
+      const paymentName = `${basePaymentName} · ${paymentStatusLabels[paymentStatus] || paymentStatusLabels.unpaid}${order.paymentId ? ` · ID: ${order.paymentId}` : ''}`;
       const next = nextStatus(order);
       const itemCount = (order.items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-      return `<tr data-id="${escapeHtml(order.id)}"><td data-label="Order ID"><strong class="table-order-id">${escapeHtml(order.id)}</strong><small>${escapeHtml(order.sentVia || 'Website')}</small></td><td data-label="Date"><span>${new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></td><td data-label="Customer"><strong class="table-customer-name">${escapeHtml(order.customer?.name || 'Customer')}</strong><a class="table-phone" href="tel:${escapeHtml(order.customer?.phone || '')}">${escapeHtml(order.customer?.phone || '')}</a><details class="order-details"><summary>${itemCount} item${itemCount === 1 ? '' : 's'} · Details</summary><div class="details-address">${escapeHtml(address || 'No address supplied')}</div><div class="details-items">${items || '<div class="item">Order items unavailable</div>'}</div><div class="details-payment">${escapeHtml(paymentName)}${order.customer?.note ? ` · Note: ${escapeHtml(order.customer.note)}` : ''}</div></details></td><td data-label="Location"><span class="table-location">${escapeHtml(address || 'No address supplied')}</span></td><td data-label="Amount"><strong class="table-amount">${money(order.total)}</strong></td><td data-label="Status"><span class="badge ${escapeHtml(order.status)}">${status}</span></td><td data-label="Action"><div class="table-actions"><label class="sr-only" for="status-${escapeHtml(order.id)}">Update status</label><select class="status" id="status-${escapeHtml(order.id)}" aria-label="Order status">${Object.entries(labels).map(([value, text]) => `<option value="${value}" ${order.status === value ? 'selected' : ''}>${text}</option>`).join('')}</select>${next ? `<button class="btn btn-primary advance" type="button">${actionLabel(next)}</button>` : ''}<label class="sr-only" for="fulfillment-${escapeHtml(order.id)}">Fulfilment type</label><select class="fulfillment" id="fulfillment-${escapeHtml(order.id)}" aria-label="Fulfilment type"><option value="delivery" ${order.fulfillment !== 'pickup' ? 'selected' : ''}>Delivery</option><option value="pickup" ${order.fulfillment === 'pickup' ? 'selected' : ''}>Pickup</option></select></div></td></tr>`;
+      return `<tr data-id="${escapeHtml(order.id)}"><td data-label="Order ID"><strong class="table-order-id">${escapeHtml(order.id)}</strong><small>${escapeHtml(order.sentVia || 'Website')}</small></td><td data-label="Date"><span>${new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></td><td data-label="Customer"><strong class="table-customer-name">${escapeHtml(order.customer?.name || 'Customer')}</strong><a class="table-phone" href="tel:${escapeHtml(order.customer?.phone || '')}">${escapeHtml(order.customer?.phone || '')}</a><span class="table-payment-method ${paymentMethodClass}">Payment: ${escapeHtml(basePaymentName)}</span><details class="order-details"><summary>${itemCount} item${itemCount === 1 ? '' : 's'} · Details</summary><div class="details-address">${escapeHtml(address || 'No address supplied')}</div><div class="details-items">${items || '<div class="item">Order items unavailable</div>'}</div><div class="details-payment">${escapeHtml(paymentName)}${order.customer?.note ? ` · Note: ${escapeHtml(order.customer.note)}` : ''}</div></details></td><td data-label="Location"><span class="table-location">${escapeHtml(address || 'No address supplied')}</span></td><td data-label="Amount"><strong class="table-amount">${money(order.total)}</strong></td><td data-label="Status"><span class="badge ${escapeHtml(order.status)}">${status}</span></td><td data-label="Action"><div class="table-actions"><label class="sr-only" for="status-${escapeHtml(order.id)}">Update status</label><select class="status status-${escapeHtml(order.status)}" id="status-${escapeHtml(order.id)}" aria-label="Order status">${Object.entries(labels).map(([value, text]) => `<option value="${value}" ${order.status === value ? 'selected' : ''}>${text}</option>`).join('')}</select>${next ? `<button class="btn btn-primary advance" type="button">${actionLabel(next)}</button>` : ''}<label class="sr-only" for="fulfillment-${escapeHtml(order.id)}">Fulfilment type</label><select class="fulfillment fulfillment-${order.fulfillment === 'pickup' ? 'pickup' : 'delivery'}" id="fulfillment-${escapeHtml(order.id)}" aria-label="Fulfilment type"><option value="delivery" ${order.fulfillment !== 'pickup' ? 'selected' : ''}>Delivery</option><option value="pickup" ${order.fulfillment === 'pickup' ? 'selected' : ''}>Pickup</option></select><label class="sr-only" for="payment-${escapeHtml(order.id)}">Payment status</label><select class="payment-status payment-${escapeHtml(paymentStatus)}" id="payment-${escapeHtml(order.id)}" aria-label="Payment status">${Object.entries(paymentStatusLabels).map(([value, text]) => `<option value="${value}" ${paymentStatus === value ? 'selected' : ''}>${text}</option>`).join('')}</select></div></td></tr>`;
     }).join('');
     ordersEl.innerHTML = `<div class="orders-table-wrap"><table class="orders-table"><thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Location</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     if (!moduleView.hidden) renderModule(orders);
@@ -169,6 +184,10 @@
       updateOrder(card.dataset.id, { status: event.target.value });
       toast(`Order status: ${labels[event.target.value]}`);
     }
+    if (event.target.matches('.payment-status')) {
+      updateOrder(card.dataset.id, { paymentStatus: event.target.value });
+      toast(`Payment status: ${paymentStatusLabels[event.target.value] || 'Updated'}`);
+    }
   });
   document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => {
     filter = button.dataset.filter;
@@ -204,6 +223,9 @@
     if ('Notification' in window && Notification.permission === 'granted') new Notification('Ruchi Raagam — New order', { body: `${order.customer?.name || 'Customer'} · ${money(order.total)} · ${order.items?.length || 0} items` });
   };
   window.addEventListener('storage', event => { if (event.key === KEY) render(); });
+  window.addEventListener('rr:local-orders-changed', () => render());
   window.addEventListener('rr:order-added', event => notify(event.detail));
+  setInterval(acceptExpiredOrders, 1000);
+  acceptExpiredOrders();
   render();
 })();

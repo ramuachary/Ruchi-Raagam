@@ -1,42 +1,65 @@
-# Ruchi Raagam shared order dashboard setup
+# Ruchi Raagam live orders and payments
 
-The static website currently saves a local copy of an order and opens the customer's email app. These files add an optional Supabase backend so orders can be stored online and appear in the restaurant dashboard on other devices.
+The website code supports shared Supabase orders, a live restaurant dashboard, customer order tracking, and Razorpay Standard Checkout. It is **not connected yet** while `backend-config.js` contains placeholders. Production activation needs the restaurant's Supabase project and Razorpay merchant credentials.
 
-## One-time setup
+## 1. Connect Supabase
 
-1. Create a Supabase project at [supabase.com](https://supabase.com/).
-2. In the project SQL Editor, run the migrations in filename order: `202610260001_orders_dashboard.sql`, `202610270001_delivery_coupons.sql`, `202610270002_delivery_pincode.sql`, `202610270003_newsletter_and_price_validation.sql`, `202610270004_razorpay_checkout.sql`, then `202610270005_gateway_payment_providers.sql`.
-3. In Supabase Project Settings → API, copy the Project URL and the **publishable** key into `backend-config.js`.
-4. In Authentication → Users, create the admin user `ruchiragam@gmail.com`. In Authentication → Providers, enable Email and Phone. For email customer accounts, enable email/password and choose whether to require email confirmation. For phone accounts, configure an SMS provider and enable phone OTP. Set the site URL and allowed redirect URLs to the deployed HTTPS website (including `/dashboard.html`).
-5. Deploy the website and dashboard over HTTPS. Open `/dashboard.html` and use **Send sign-in link**. Sign in from the restaurant email account.
+1. Create or open the restaurant's Supabase project.
+2. In Project Settings → API, copy the Project URL and the **publishable** key (the legacy `anon` key also works) into `backend-config.js`:
 
-The SQL only allows anonymous order creation through a validating function. Reading, changing status, and clearing orders require an authenticated account whose email is `ruchiragam@gmail.com`. Never put a Supabase service-role/secret key in browser files.
+   ```js
+   window.RUCHI_RAAGAM_SUPABASE = {
+     url: 'https://<project-ref>.supabase.co',
+     publishableKey: '<publishable-key>'
+   };
+   ```
 
-## Customer accounts
+   This key is designed for browser use with Row Level Security. Never put a Supabase secret/service-role key in this file.
 
-`customer-auth.js` adds a sign-in gate for the customer website once Supabase is configured. Customers can create an account with email and password (then confirm by email if confirmation is enabled) or use a phone number in international format and verify an SMS code. The site stays publicly viewable while the placeholder Supabase settings remain unchanged; replace the URL and publishable key in `backend-config.js` to activate the gate. Use only the Supabase publishable/anon key in browser code, never a service-role/secret key. Phone OTP requires a configured SMS provider and may incur provider charges.
+3. Install the Supabase CLI, link this folder to the project, and apply every migration in filename order:
 
-Migration `202610270003_newsletter_and_price_validation.sql` creates `newsletter_subscribers` and a public subscribe function that only inserts/updates an email; public clients cannot read the list. Newsletter signups are stored but are not automatically emailed marketing campaigns. The order RPC recomputes item prices, coupon discounts, delivery charges and totals on the database using the menu SKU order in `index.html`. The entered distance still comes from the customer; use verified delivery zones or a trusted distance service before relying on it for final delivery eligibility. Migration `202610270004_razorpay_checkout.sql` stores Razorpay payment states and private checkout sessions.
+   ```sh
+   supabase login
+   supabase link --project-ref <project-ref>
+   supabase db push
+   ```
 
-Migration `202610270006_customer_order_tracking.sql` enables the customer order-tracking section. It only returns an order's reference, status, fulfilment type and timestamps after both its UUID and checkout phone number match. Apply this migration to Supabase to enable tracking on another device; without Supabase, the site can only show an order saved in the same browser.
+   The migrations are `202610260001_orders_dashboard.sql`, `202610270001_delivery_coupons.sql`, `202610270002_delivery_pincode.sql`, `202610270003_newsletter_and_price_validation.sql`, `202610270004_razorpay_checkout.sql`, `202610270005_gateway_payment_providers.sql`, `202610270006_customer_order_tracking.sql`, `202610290001_admin_payment_status.sql`, `202610290002_customer_order_cancellation_window.sql`, and `202610290003_customer_order_30_second_window.sql`.
 
-## Razorpay online checkout
+4. In Supabase Authentication, create the restaurant admin `ruchiragam@gmail.com`, configure Email sign-in, and set the deployed HTTPS website and `/dashboard.html` as allowed redirect URLs. Customer accounts are enabled by the website; phone OTP additionally needs an SMS provider.
+5. Deploy the static site over HTTPS. Once Supabase is configured, ordinary confirmed orders are submitted to Supabase and appear in the signed-in dashboard through Realtime. The customer tracking page also reads the shared order status.
 
-The website uses Razorpay Standard Checkout. It creates each gateway order server-side, checks the item prices and total again, verifies the callback signature and captured payment on the server, and stores a paid order for the dashboard. A webhook also records a captured payment if the customer closes the page before returning. Do not put `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, or a Supabase secret/service-role key in browser files or GitHub.
+The database validates menu SKUs, prices, coupon math, and delivery charges. Anonymous customers can submit only through the validating `submit_order` function. Order reads and admin workflow changes are restricted to the authenticated restaurant email. Browser storage is only a local fallback and does not share orders between devices.
 
-1. Create/activate the restaurant's Razorpay merchant account and use **Test Mode** keys first.
-2. Deploy `supabase/functions/razorpay-checkout` with the Supabase CLI or Dashboard.
-3. In Supabase Edge Function Secrets, set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET`. The Supabase secret key is provided to the function by Supabase.
-4. In Razorpay Dashboard → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/razorpay-checkout` and subscribe to `payment.captured`; use the same webhook secret as `RAZORPAY_WEBHOOK_SECRET`.
-5. Run the migrations above, configure `backend-config.js`, and test successful, failed, dismissed, and webhook payment flows in Razorpay Test Mode before using Live Mode.
+## 2. Deploy Razorpay checkout
 
-Razorpay requires an order to be created by the server and requires signature/payment-state checks before fulfilment. See the [Razorpay web integration steps](https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/) and [Supabase Edge Function secrets guide](https://supabase.com/docs/guides/functions/secrets).
+The Edge Function creates payment orders server-side, checks the item prices and total, verifies Razorpay's signature and captured payment state, and saves only verified paid orders. Its webhook handles captured payments if the customer doesn't return to the website.
 
-## What becomes shared
+1. Activate the Razorpay merchant account. Start with **Test Mode** keys and complete test orders before switching to Live Mode.
+2. In Supabase Dashboard → Edge Functions → Secrets, set these values directly in the dashboard:
+   - `RAZORPAY_KEY_ID`
+   - `RAZORPAY_KEY_SECRET`
+   - `RAZORPAY_WEBHOOK_SECRET`
 
-- Website orders are written to Supabase when the customer chooses the order email action, and kept in browser storage as a fallback.
-- The signed-in dashboard reads orders from Supabase and listens for Realtime database changes.
-- Dashboard status and fulfilment changes are written back to Supabase.
-- The dashboard can show browser notifications after the restaurant enables notifications in that browser.
+   Do not send the secret values in chat, commit them to GitHub, or put them in browser files. Supabase injects its project URL and server-side secret key into the Edge Function runtime.
 
-Email sending is still performed by the customer's email app; this backend stores orders submitted by the website. Browser notifications require the dashboard to remain open and browser notification permission to be granted.
+3. Deploy the function:
+
+   ```sh
+   supabase functions deploy razorpay-checkout --project-ref <project-ref>
+   ```
+
+4. In Razorpay Dashboard → Webhooks, add `https://<project-ref>.supabase.co/functions/v1/razorpay-checkout`, subscribe to `payment.captured` (and `order.paid` if available), and use the same webhook secret as `RAZORPAY_WEBHOOK_SECRET`.
+5. Use Test Mode first. After successful, failed, dismissed, and webhook-recovery flows work, change the three Edge Function secrets to the Razorpay **Live Mode** values. The public Razorpay Key ID is returned by the function; the secret stays server-side.
+
+Razorpay's merchant account must be approved and Live Mode enabled before live collections can succeed. UPI, PhonePe, and Internet Banking choices in the form are manual payment instructions; Razorpay is the actual online gateway path. Other branded gateway options are not connected payment processors.
+
+## What is shared and what is not
+
+- Normal website orders are saved to Supabase immediately when the customer confirms checkout; an email or WhatsApp send is not required for dashboard delivery.
+- The authenticated dashboard listens for database Realtime updates and writes order, fulfillment, and payment status changes back to Supabase.
+- Browser notifications require the dashboard to remain open and notification permission to be granted.
+- Email order notifications use the website's configured email submission flow; they are separate from saving a shared order.
+- The 30-second cancel/automatic-accept status rule works in the tracking page and dashboard while one of those pages is open. Exact scheduled updates when every browser is closed require a server-side scheduled job.
+
+See the [Supabase Edge Function secrets guide](https://supabase.com/docs/guides/functions/secrets), [Supabase function deployment guide](https://supabase.com/docs/guides/functions/deploy), and [Razorpay Standard Checkout integration steps](https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/).

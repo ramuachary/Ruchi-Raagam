@@ -6,7 +6,16 @@
   };
   const saveOrder = order => {
     const orders = readOrders();
-    if (orders.some(item => item.id === order.id)) return;
+    const existingIndex = orders.findIndex(item => item.id === order.id);
+    if (existingIndex !== -1) {
+      const existing = orders[existingIndex];
+      if (order.sentVia && order.sentVia !== 'Website' && existing.sentVia !== order.sentVia) {
+        orders[existingIndex] = { ...existing, sentVia: order.sentVia };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch { return; }
+        window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: orders }));
+      }
+      return;
+    }
     orders.unshift(order);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); }
     catch { return; }
@@ -42,9 +51,11 @@
   let draft = null;
   form.addEventListener('submit', () => {
     const customer = Object.fromEntries(new FormData(form).entries());
-    const items = [...document.querySelectorAll('.dish')].map(card => ({
+    const items = [...document.querySelectorAll('.dish')].map((card, index) => ({
+      sku: index + 1,
       name: card.querySelector('.dish-title h3')?.textContent.trim() || 'Item',
       portion: card.querySelector('.portion-select')?.selectedOptions[0]?.textContent.split('·')[0].trim() || 'Single',
+      variant: card.querySelector('.portion-select') ? (card.querySelector('.portion-select').selectedIndex === 0 ? 'half' : 'full') : 'single',
       quantity: Number(card.querySelector('.qty-value')?.textContent || 0),
       price: Number((card.querySelector('.price')?.textContent || '').replace(/[^0-9]/g, ''))
     })).filter(item => item.quantity > 0);
@@ -66,10 +77,13 @@
       fulfillment: 'delivery',
       status: 'new'
     };
+    // Save a normal order as soon as the customer confirms it. Online gateway
+    // orders are saved only after Razorpay verifies the payment.
+    if (draft.payment !== 'razorpay') saveOrder({ ...draft, sentVia: 'Website' });
   });
 
   document.getElementById('sendWhatsApp')?.addEventListener('click', () => {
-    if (draft) saveOrder({ ...draft, sentVia: 'Email' });
+    if (draft) saveOrder({ ...draft, sentVia: 'WhatsApp' });
   });
 
   const emailStatus = document.getElementById('emailOrderStatus');

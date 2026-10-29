@@ -1,12 +1,12 @@
 const languageCopy=[
-      ['.links a',['Menu Card','Our story','Reviews'],['మెనూ కార్డ్','మా కథ','రివ్యూలు']],
+      ['.links a',['Menu Card','Reviews'],['మెనూ కార్డ్','రివ్యూలు']],
       ['.menu-hint',['Tap a dish photo or name to see serving size and sides.'],['సర్వింగ్ వివరాలు, సైడ్స్ చూడటానికి వంటకం ఫోటో లేదా పేరుపై నొక్కండి.']],
       ['.nav-cta',['Order Now'],['ఇప్పుడే ఆర్డర్ చేయండి']],
       ['.hero-content .eyebrow',['Andhra roots · Made with love'],['ఆంధ్ర రుచులు · ప్రేమతో వండినవి']],
       ['.hero-content h1',['A taste of home, with a little <em>fire.</em>'],['ఇంటి రుచి, కాస్త <em>కారం.</em>']],
       ['.hero-content p',['From the first fragrant spoonful to the last — discover the bold, joyful flavours of Andhra, made fresh every day.'],['మొదటి ముద్ద నుంచి చివరి ముద్ద వరకు — ప్రతిరోజూ తాజాగా వండే ఆంధ్ర రుచుల్ని ఆస్వాదించండి.']],
       ['.hero-actions .button',['Explore our menu'],['మా మెనూ చూడండి']],
-      ['.hero-actions .text-link',['Our story <span>↗</span>'],['మా కథ <span>↗</span>']],
+      ['.hero-actions .text-link',['Find us <span>↗</span>'],['చిరునామా చూడండి <span>↗</span>']],
       ['.hero-note',['<i class="note-dot"></i> Andhra warmth, in every bite.'],['<i class="note-dot"></i> ప్రతి ముద్దలో ఆంధ్రా ఆప్యాయత.']],
       ['.ticker-inner span',['Big flavour, from Andhra <b>✦</b>','Cooked fresh every day <b>✦</b>','Come hungry, leave happy <b>✦</b>'],['ఆంధ్రా ఘాటు రుచి <b>✦</b>','ప్రతిరోజూ తాజాగా వంట <b>✦</b>','ఆకలితో రండి, ఆనందంగా వెళ్లండి <b>✦</b>']],
       ['#menu .section-head .eyebrow',['A few favourites'],['మా ప్రత్యేక వంటకాలు']],
@@ -42,15 +42,6 @@ const languageCopy=[
 
       ['.dish-copy p',['Long grain rice, slow dum, warm whole spices and our signature house masala.','Juicy chicken and fragrant basmati rice, layered with chilli and toasted spices.','Tender boneless chicken, dum-cooked with aromatic rice and our house masala.','Whole chicken joint layered into aromatic basmati rice and slow-cooked dum style.','Spiced basmati rice topped with juicy, crispy fried chicken pieces.','Classic chicken biryani sealed and slow-cooked with fragrant spices.','Spicy chicken 65 pieces tossed with fragrant basmati rice and Andhra masala.','Chicken and basmati rice with bold black pepper, curry leaves and warm spices.','Golden fried chicken served over spicy rice with onions and fresh herbs.','Charcoal-roasted chicken marinated in yogurt, chilli and tandoori spices.','Crispy chicken lollipops tossed in a bold Andhra chilli-garlic glaze.','Juicy grilled chicken with house herbs, pepper and a squeeze of lemon.','Spiced egg and fresh onions wrapped in a flaky paratha.','Spiced chicken wrapped in a freshly toasted paratha.','Grilled paneer, peppers and onion rolled in a flaky paratha.','Soft tandoor-baked naan brushed with melted butter.','Golden crispy fries served hot with a dip.','Toasted sandwich filled with chicken, cheese and fresh vegetables.','Crispy chicken patty with lettuce in a toasted bun.','Juicy prawns layered with fragrant basmati rice and Andhra spices.','Golden mushrooms and basmati rice cooked with warm Andhra spices.'],['సువాసనగల బాస్మతి బియ్యం, మసాలాలతో నెమ్మదిగా దమ్‌లో వండిన మా ప్రత్యేక పులావ్.','మెత్తని చికెన్, బాస్మతి బియ్యం, మిర్చి మరియు ఘాటైన మసాలాల పొరలతో.','బోన్‌లెస్ చికెన్‌ను సువాసనగల బియ్యం, మా ప్రత్యేక మసాలాతో దమ్‌లో వండిన బిర్యానీ.','మొత్తం చికెన్ జాయింట్‌ను సువాసనగల బాస్మతి బియ్యంతో కలిపి నెమ్మదిగా దమ్‌లో వండిన బిర్యానీ.','మసాలా బాస్మతి బియ్యంపై కరకరలాడే, జ్యూసీ ఫ్రైడ్ చికెన్ ముక్కలు.','సువాసనగల మసాలాలతో సీల్ చేసి నెమ్మదిగా దమ్‌లో వండిన క్లాసిక్ చికెన్ బిర్యానీ.','ఆంధ్రా మసాలా, సువాసనగల బాస్మతి బియ్యంతో కలిపిన ఘాటైన చికెన్ 65 ముక్కలు.','మిరియాలు, కరివేపాకు, ఘాటైన మసాలాలతో చికెన్ మరియు బాస్మతి బియ్యం.','ఉల్లిపాయలు, తాజా ఆకుకూరలతో స్పైసీ రైస్‌పై గోల్డెన్ ఫ్రైడ్ చికెన్.','పెరుగు, మిర్చి మరియు తందూరి మసాలాతో చార్కోల్‌పై కాల్చిన చికెన్.','ఆంధ్రా మిర్చి-వెల్లుల్లి సాస్‌లో కలిపిన కరకరలాడే చికెన్ లాలిపాప్స్.','ఇంటి హెర్బ్స్, మిరియాలు, నిమ్మరసంతో జ్యూసీ గ్రిల్డ్ చికెన్.','మసాలా గుడ్డు, తాజా ఉల్లిపాయలు మరియు పెనం మీద కాల్చిన పరాటాతో చేసిన ఎగ్ రోల్.','తాజాగా కాల్చిన పరాటాలో మసాలా చికెన్‌తో చేసిన రోల్.','గ్రిల్ చేసిన పనీర్, క్యాప్సికం మరియు ఉల్లిపాయలతో పరాటాలో చుట్టిన రోల్.','తందూరీలో కాల్చి వెన్న రాసిన మెత్తని నాన్.','వేడి వేడిగా డిప్‌తో అందించే గోల్డెన్ క్రిస్పీ ఫ్రైస్.','చికెన్, చీజ్ మరియు తాజా కూరగాయలతో టోస్ట్ చేసిన సాండ్‌విచ్.','టోస్ట్ చేసిన బన్‌లో లెట్యూస్‌తో క్రిస్పీ చికెన్ ప్యాటీ.','సువాసనగల బాస్మతి బియ్యం, ఆంధ్రా మసాలాలతో కలిపిన జ్యూసీ రొయ్యలు.','ఘాటైన ఆంధ్రా మసాలాలతో వండిన బాస్మతి బియ్యం, గోల్డెన్ మష్రూమ్స్.']],
       ['.menu-action .text-link',['See the full menu <span>↗</span>'],['పూర్తి మెనూ చూడండి <span>↗</span>']],
-      ['.story-copy .eyebrow',['The heart of Andhra'],['ఆంధ్రా వంటల ఆత్మ']],
-      ['.story-copy h2',['From Andhra roots<br>to your table.'],['ఆంధ్రా మూలాల రుచి<br>మీ ఇంటి బల్ల వరకు.']],
-      ['.story-copy p',['At Ruchi Raagam, every plate begins with fragrant rice, bold Andhra spices, and the patience of slow dum. We cook fresh, serve generous portions, and bring the warmth of an Andhra family table to your home.'],['రుచి రాగంలో ప్రతి వంటకం సువాసనగల అన్నం, ఆంధ్రా మసాలాల ఘాటు, నెమ్మదిగా దమ్‌లో వండే ఓపికతో మొదలవుతుంది. తాజాగా వండి, ఉదారమైన పోర్షన్‌లతో ఇంటి భోజనం ఆప్యాయతను మీకు అందిస్తాం.']],
-      ['.story-highlight strong',['Slow dum','Andhra spice','Fresh daily'],['నెమ్మది దమ్','ఆంధ్రా ఘాటు','రోజూ తాజాగా']],
-      ['.story-highlight small',['Deep, layered flavour','Bold, balanced heat','Cooked to order'],['చక్కని పొరల రుచి','సమతుల్యమైన ఘాటు','ఆర్డర్‌కి తాజాగా వంట']],
-      ['.story-badge-kicker',['OUR PROMISE'],['మా వాగ్దానం']],
-      ['.story-badge-main',['Andhra flavour,<br>made with love.'],['ఆంధ్రా రుచి,<br>ప్రేమతో వడ్డింపు.']],
-      ['.story-badge-small',['Slow-cooked daily'],['రోజూ నెమ్మదిగా వండినవి']],
-      ['.story-copy .button',['Come on in'],['రండి, భోజనం చేద్దాం']],
       ['.review-intro .eyebrow',['Your feedback matters'],['మీ అభిప్రాయం మాకు ముఖ్యం']],
       ['.review-intro h2',['Had a good meal?<br>Tell us about it.'],['భోజనం నచ్చిందా?<br>మీ అభిప్రాయం చెప్పండి.']],
       ['.review-intro > p',['Your review helps our team make every plate better. Share your rating and a few words with us on WhatsApp.'],['మీ సమీక్ష మా ప్రతి వంటకాన్ని మరింత మెరుగుపరచడానికి సహాయపడుతుంది. మీ rating, అభిప్రాయాన్ని WhatsApp‌లో పంపండి.']],
@@ -98,7 +89,16 @@ const languageCopy=[
       ['One sandwich · Served toasted','ఒక సాండ్‌విచ్ · టోస్ట్ చేసి అందిస్తాం'],
       ['One chicken burger · Served with sauce','ఒక చికెన్ బర్గర్ · సాస్‌తో అందిస్తాం'],
       ['Half portion: 1 person · Full portion: 2 people<br>Comes with: raita & salan','హాఫ్ పోర్షన్: 1 వ్యక్తి · ఫుల్ పోర్షన్: 2 మంది<br>తోడు: రైతా, సాలన్'],
-      ['Half portion: 1 person · Full portion: 2 people<br>Comes with: raita & salan','హాఫ్ పోర్షన్: 1 వ్యక్తి · ఫుల్ పోర్షన్: 2 మంది<br>తోడు: రైతా, సాలన్']
+      ['Half portion: 1 person · Full portion: 2 people<br>Comes with: raita & salan','హాఫ్ పోర్షన్: 1 వ్యక్తి · ఫుల్ పోర్షన్: 2 మంది<br>తోడు: రైతా, సాలన్'],
+      ['One thickshake · Served chilled','ఒక థిక్‌షేక్ · చల్లగా అందిస్తాం'],
+      ['One milkshake · Served chilled','ఒక మిల్క్‌షేక్ · చల్లగా అందిస్తాం'],
+      ['One scoop serving · Vanilla','ఒక స్కూప్ · వెనిల్లా'],
+      ['One scoop serving · Chocolate','ఒక స్కూప్ · చాక్లెట్'],
+      ['One scoop serving · Strawberry','ఒక స్కూప్ · స్ట్రాబెర్రీ'],
+      ['One scoop serving · Mango','ఒక స్కూప్ · మ్యాంగో'],
+      ['One scoop serving · Butterscotch','ఒక స్కూప్ · బటర్‌స్కాచ్'],
+      ['Fresh fruit salad · Served chilled','తాజా ఫ్రూట్ సలాడ్ · చల్లగా అందిస్తాం'],
+      ['Regular pack ₹350 · Family pack ₹700','రెగ్యులర్ ప్యాక్ ₹350 · ఫ్యామిలీ ప్యాక్ ₹700']
     ];
     document.querySelectorAll('.dish').forEach((card,index)=>{const note=document.createElement('div');note.className='dish-serving';note.hidden=true;note.innerHTML=dishServingInfo[index][0];card.querySelector('.dish-copy p').after(note);const title=card.querySelector('.dish-title h3');title.setAttribute('role','button');title.setAttribute('tabindex','0');title.setAttribute('aria-expanded','false');title.setAttribute('aria-label',`Show serving details for ${title.textContent}`);const toggleDetails=()=>{note.hidden=!note.hidden;title.setAttribute('aria-expanded',String(!note.hidden));title.setAttribute('aria-label',`${note.hidden?'Show':'Hide'} serving details for ${title.textContent}`)};card.addEventListener('click',event=>{if(event.target.closest('button,select,input,textarea,a'))return;toggleDetails()});title.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDetails()}})});
     const updateServingLanguage=()=>document.querySelectorAll('.dish-serving').forEach((note,index)=>note.innerHTML=dishServingInfo[index][currentLanguage==='te'?1:0]);
