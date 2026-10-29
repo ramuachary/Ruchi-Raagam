@@ -1,6 +1,6 @@
 (() => {
   const KEY = 'ruchi-raagam-orders-v1';
-  const ADMIN = 'ruchiragam@gmail.com';
+  const ADMIN = 'ramuachary8763@gmail.com';
   const config = window.RUCHI_RAAGAM_SUPABASE;
   const configured = config?.url && !config.url.includes('YOUR_PROJECT_REF') && config.publishableKey && !config.publishableKey.includes('YOUR_SUPABASE_');
   const shell = document.querySelector('.shell');
