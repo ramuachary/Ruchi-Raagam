@@ -512,6 +512,11 @@ html[lang="te"] .payment-method::before{content:"03  చెల్లింపు
 .tracking-order-ref strong{max-width:65%;overflow-wrap:anywhere;color:#30251e;font-size:13px}
 .tracking-form input[name="orderId"]{box-sizing:border-box;min-width:0;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.025em}
 .tracking-order-ref strong{overflow-wrap:anywhere;word-break:break-word}
+/* Give the restaurant mark more presence without crowding the navigation. */
+header .brand-logo{width:clamp(198px,20vw,224px);filter:drop-shadow(0 5px 9px rgba(75,44,24,.12));transition:filter .2s,transform .2s}
+header .brand:hover .brand-logo{filter:drop-shadow(0 7px 12px rgba(75,44,24,.2));transform:translateY(-1px)}
+@media(max-width:760px){header .brand-logo{width:clamp(146px,43vw,174px)}}
+@media(max-width:380px){header .brand-logo{width:clamp(136px,40vw,152px)}}
 .tracking-current{margin:16px 0 18px;color:#b64b25;font:600 22px/1.25 var(--serif)}
 .tracking-current.is-cancelled{color:#9b3027}
 .tracking-timeline{display:flex;justify-content:space-between;gap:8px;margin:0;padding:0;list-style:none}
@@ -913,4 +918,15 @@ header .menu-toggle{width:40px;height:40px;flex-basis:40px;border-color:#e9ddd0;
 #orderCount .order-items-preview{display:block;max-width:min(42vw,420px);margin-top:4px;color:#594638;font-size:11px;font-weight:500;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #orderSummary:not([hidden]):not(.checkout-opened) #orderCount .order-items-preview{color:rgba(255,255,255,.94)}
 @media(max-width:760px){#orderCount .order-items-preview{max-width:42vw;font-size:10px}#orderSummary:not([hidden]):not(.checkout-opened) #orderCount{white-space:normal}}
+
+/* Framed brand badge: keep the whole uploaded mark visible at every width. */
+header .brand{box-sizing:border-box;padding:5px 9px;border:1px solid #ead7c2;border-radius:14px;background:linear-gradient(135deg,#fffdf9 0%,#f8ead8 100%);box-shadow:0 5px 15px rgba(94,54,25,.09),inset 0 1px #fff;overflow:visible}
+header .brand-logo{box-sizing:border-box;width:196px;max-width:none;height:auto;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(65,38,21,.08))}
+header .brand:hover{border-color:#d6a877;box-shadow:0 8px 20px rgba(94,54,25,.15),inset 0 1px #fff}
+@media(max-width:1100px){header .brand-logo{width:176px}}
+@media(max-width:760px){header .brand{padding:4px 6px;border-radius:11px}header .brand-logo{width:clamp(140px,39vw,158px)}}
+@media(max-width:380px){header .brand-logo{width:clamp(128px,37vw,140px)}}
+@media(max-width:760px){header .brand{display:inline-flex!important;visibility:visible;flex:0 0 auto;min-width:0}header .brand-logo{display:block!important;visibility:visible;opacity:1;max-width:none}header #navLinks{display:none!important}}
+@media(max-width:760px){header .nav>a.brand{position:relative;z-index:5;width:max-content;max-width:none;flex:0 0 auto;overflow:visible}header .nav>a.brand>img.brand-logo{width:clamp(136px,40vw,156px)!important;height:auto!important;max-width:none!important;flex:0 0 auto;object-fit:contain}}
+@media(max-width:380px){header .nav>a.brand>img.brand-logo{width:clamp(126px,38vw,140px)!important}}
 
