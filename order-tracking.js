@@ -1,17 +1,17 @@
 (() => {
   const section = document.createElement('section');
-  section.className = 'tracking-section';
+  section.className = 'tracking-section support-section';
   section.id = 'track-order';
-  section.innerHTML = '<div class="wrap"><div class="tracking-card"><div class="eyebrow">Order updates</div><h2 id="trackOrderTitle">Track your order</h2><p id="trackOrderIntro">Enter the order reference and the phone number used at checkout to see the latest status.</p><form class="tracking-form" id="trackOrderForm"><label><span class="field-label" id="trackOrderIdLabel">Order reference</span><input id="trackOrderId" name="orderId" required autocomplete="off" placeholder="Order reference from your confirmation"></label><label><span class="field-label" id="trackPhoneLabel">Phone number</span><input id="trackOrderPhone" name="phone" type="tel" autocomplete="tel" required placeholder="Phone number used for the order"></label><button class="button" id="trackOrderSubmit" type="submit">Find my order</button></form><p id="trackOrderMessage" class="tracking-message" role="status" aria-live="polite"></p><div id="trackOrderResult" class="tracking-result" hidden aria-live="polite"></div></div></div></section>';
+  section.innerHTML = '<div class="wrap"><div class="tracking-card support-card"><div class="eyebrow" data-en="Customer help" data-te="కస్టమర్ సహాయం">Customer help</div><h2 id="helpTitle" data-en="How can we help?" data-te="మేమెలా సహాయపడగలం?">How can we help?</h2><p id="helpIntro" data-en="Find quick answers about ordering, delivery, payments and tracking." data-te="ఆర్డర్, డెలివరీ, చెల్లింపులు, ట్రాకింగ్ గురించి సమాధానాలు ఇక్కడ చూడండి.">Find quick answers about ordering, delivery, payments and tracking.</p><div class="support-faqs"><details><summary data-en="How do I place an order?" data-te="ఆర్డర్ ఎలా చేయాలి?">How do I place an order?</summary><p data-en="Choose dishes and quantities, open View order, fill in delivery details, then confirm." data-te="వంటకాలు, పరిమాణాలు ఎంచుకుని View order నొక్కండి. డెలివరీ వివరాలు నింపి Confirm order చేయండి.">Choose dishes and quantities, open View order, fill in delivery details, then confirm.</p></details><details><summary data-en="What are the delivery charges?" data-te="డెలివరీ ఛార్జీలు ఎంత?">What are the delivery charges?</summary><p data-en="Delivery is free within 7 km. Beyond that, it is ₹5 for each started extra kilometre." data-te="7 కి.మీ. వరకు డెలివరీ ఉచితం. ఆపై ప్రారంభమైన ప్రతి అదనపు కి.మీ.కు ₹5 ఛార్జీ.">Delivery is free within 7 km. Beyond that, it is ₹5 for each started extra kilometre.</p></details><details><summary data-en="Need help with payment or cancellation?" data-te="చెల్లింపు లేదా రద్దుకు సహాయం కావాలా?">Need help with payment or cancellation?</summary><p data-en="Call us and share your order reference. Cancellation is available only while the cancel option is shown." data-te="మాకు కాల్ చేసి ఆర్డర్ రిఫరెన్స్ చెప్పండి. Cancel order ఎంపిక కనిపిస్తున్నప్పుడే రద్దు చేయవచ్చు.">Call us and share your order reference. Cancellation is available only while the cancel option is shown.</p></details></div><details class="support-track-details" id="trackOrderDetails"><summary data-en="Track your order" data-te="మీ ఆర్డర్‌ను ట్రాక్ చేయండి">Track your order</summary><p id="trackOrderIntro" data-en="Enter the order reference and the phone number used at checkout to see the latest status." data-te="తాజా స్థితి చూడటానికి ఆర్డర్ రిఫరెన్స్, చెక్‌అవుట్‌లో ఇచ్చిన ఫోన్ నంబర్ నమోదు చేయండి.">Enter the order reference and the phone number used at checkout to see the latest status.</p><form class="tracking-form" id="trackOrderForm"><label><span class="field-label" id="trackOrderIdLabel">Order reference</span><input id="trackOrderId" name="orderId" required autocomplete="off" placeholder="Order reference from your confirmation"></label><label><span class="field-label" id="trackPhoneLabel">Phone number</span><input id="trackOrderPhone" name="phone" type="tel" autocomplete="tel" required placeholder="Phone number used for the order"></label><button class="button" id="trackOrderSubmit" type="submit">Find my order</button></form><p id="trackOrderMessage" class="tracking-message" role="status" aria-live="polite"></p><div id="trackOrderResult" class="tracking-result" hidden aria-live="polite"></div></details><div class="help-contact-actions"><a href="tel:+919876543210" data-en="☎ Call restaurant" data-te="☎ రెస్టారెంట్‌కు కాల్">☎ Call restaurant</a><a href="mailto:ruchiragam@gmail.com" data-en="✉ Email us" data-te="✉ ఈమెయిల్ చేయండి">✉ Email us</a></div></div></div></section>';
   const reviews = document.getElementById('reviews');
   const visit = document.getElementById('visit');
-  if (reviews) reviews.before(section);
-  else if (visit) visit.before(section);
+  if (visit) visit.after(section);
+  else if (reviews) reviews.after(section);
   const social = document.querySelector('.social');
   if (social && !social.querySelector('a[href="#track-order"]')) {
     const link = document.createElement('a');
     link.href = '#track-order';
-    link.textContent = 'Track order';
+    link.textContent = 'Help';
     social.insertBefore(link, document.getElementById('openDashboard'));
   }
 
@@ -216,6 +216,7 @@
   trackLink.href = '#track-order';
   trackLink.hidden = true;
   trackLink.textContent = 'Track this order ↗';
+  trackLink.addEventListener('click', () => { document.getElementById('trackOrderDetails').open = true; });
   quickCancel.after(trackLink);
 
   const setOrderReference = async order => {
@@ -250,6 +251,7 @@
   };
   const languageObserver = new MutationObserver(() => {
     const telugu = document.documentElement.lang === 'te';
+    section.querySelectorAll('[data-en][data-te]').forEach(element => { element.textContent = element.dataset[telugu ? 'te' : 'en']; });
     idField.placeholder = telugu ? 'ఆర్డర్ రిఫరెన్స్ నమోదు చేయండి' : 'Order reference from your confirmation';
     phoneField.placeholder = telugu ? 'ఆర్డర్‌లో ఇచ్చిన ఫోన్ నంబర్' : 'Phone number used for the order';
     document.querySelectorAll('.tracking-cancel-button').forEach(button => { button.textContent = telugu ? 'ఆర్డర్ రద్దు చేయండి' : 'Cancel order'; });

@@ -958,26 +958,19 @@ header .brand-caption{display:block;padding-left:2px;color:#886449;font:600 7px/
 #menu .reorder-last-button:hover{background:#f8e9d8;border-color:#bd5528;transform:translateY(-1px)}
 #menu .reorder-last-button[hidden]{display:none}
 @media(max-width:600px){#menu .reorder-last-button{max-width:100%;font-size:11px;padding:9px 12px}}
-#helpWidget{position:fixed;z-index:1001;right:22px;bottom:calc(92px + env(safe-area-inset-bottom));font-family:var(--sans)}
-.help-launcher{display:flex;align-items:center;gap:9px;min-height:48px;padding:0 18px 0 10px;border:0;border-radius:999px;background:#254c3e;color:#fff;box-shadow:0 10px 28px rgba(33,54,43,.24);font:700 13px var(--sans);cursor:pointer;transition:transform .2s ease,background .2s ease}
-.help-launcher:hover{transform:translateY(-2px);background:#193c31}
-.help-launcher>span{display:grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#fff;color:#bd5528;font-size:18px}
-.help-panel{position:absolute;right:0;bottom:60px;width:min(370px,calc(100vw - 32px));max-height:min(640px,calc(100dvh - 150px));overflow:auto;padding:20px;border:1px solid #ead8c6;border-radius:20px;background:#fffdf9;color:#35241d;box-shadow:0 18px 55px rgba(43,31,23,.22);animation:help-pop .22s ease-out}
-.help-panel[hidden]{display:none}
-.help-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.help-kicker{color:#b84d2a;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-.help-panel h2{margin:5px 0 0;font:700 24px/1.1 var(--serif)}
-.help-close{width:32px;height:32px;border:1px solid #ead8c6;border-radius:50%;background:#fff;color:#46362c;font-size:21px;cursor:pointer}
-.help-intro{margin:9px 0 14px;color:#78685d;font-size:12px}
-.help-faqs details{border-top:1px solid #eee4da}
-.help-faqs summary{position:relative;padding:12px 20px 12px 0;color:#3e2b21;font-size:12px;font-weight:700;cursor:pointer;list-style:none}
-.help-faqs summary::-webkit-details-marker{display:none}
-.help-faqs summary:after{position:absolute;right:2px;content:'+';color:#bb4d28;font-size:17px;line-height:12px}
-.help-faqs details[open] summary:after{content:'−'}
-.help-faqs details p{margin:-3px 0 12px;color:#746459;font-size:11px;line-height:1.55}
+.support-card{max-width:960px}
+.support-card h2{margin-top:12px}
+.support-faqs{margin:24px 0 0;border-top:1px solid #eee4da}
+.support-faqs details,.support-track-details{border-bottom:1px solid #eee4da}
+.support-faqs summary,.support-track-details>summary{position:relative;padding:15px 28px 15px 0;color:#3e2b21;font-size:14px;font-weight:700;cursor:pointer;list-style:none}
+.support-faqs summary::-webkit-details-marker,.support-track-details>summary::-webkit-details-marker{display:none}
+.support-faqs summary:after,.support-track-details>summary:after{position:absolute;right:4px;content:'+';color:#bb4d28;font-size:20px;line-height:14px}
+.support-faqs details[open] summary:after,.support-track-details[open]>summary:after{content:'−'}
+.support-faqs details p,.support-track-details>p{margin:0 0 15px;color:#746459;font-size:13px;line-height:1.65}
+.support-track-details{margin-top:7px;border-top:1px solid #eee4da}
+.support-track-details .tracking-form{margin-top:8px}
+.support-track-details .tracking-result{margin-bottom:16px}
 .help-contact-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px}
 .help-contact-actions a{display:flex;align-items:center;justify-content:center;min-height:40px;padding:8px;border:1px solid #e5cbb3;border-radius:10px;color:#a74425;font-size:11px;font-weight:700}
 .help-contact-actions a:hover{background:#fff3e8}
-@keyframes help-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:600px){#helpWidget{right:12px;bottom:calc(86px + env(safe-area-inset-bottom))}.help-launcher{min-height:44px;padding-right:14px;font-size:12px}.help-panel{bottom:54px;padding:17px;border-radius:17px}.help-panel h2{font-size:22px}}
-@media(prefers-reduced-motion:reduce){.help-panel{animation:none}.help-launcher{transition:none}}
+@media(max-width:760px){.support-faqs summary,.support-track-details>summary{padding:14px 26px 14px 0;font-size:13px}.support-faqs details p,.support-track-details>p{font-size:12px}}
