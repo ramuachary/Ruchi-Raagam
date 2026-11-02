@@ -183,3 +183,25 @@ if(brandIntro){
   document.getElementById('skipIntro').addEventListener('click',()=>{window.clearTimeout(introTimer);dismissIntro()});
 }
 
+// Show a clear, approximate delivery window on the order confirmation.
+(() => {
+  const form = document.getElementById('checkoutForm');
+  const confirmation = document.getElementById('orderConfirmation');
+  const title = confirmation?.querySelector('h3');
+  if (!form || !confirmation || !title) return;
+  let eta = document.getElementById('orderEta');
+  if (!eta) {
+    eta = document.createElement('p');
+    eta.id = 'orderEta';
+    eta.className = 'order-eta';
+    title.after(eta);
+  }
+  const updateEta = () => {
+    eta.textContent = document.documentElement.lang === 'te'
+      ? 'అంచనా డెలివరీ సమయం: ఆర్డర్ చేసిన తర్వాత సుమారు 35–50 నిమిషాలు.'
+      : 'Estimated delivery: around 35–50 minutes after placing your order.';
+  };
+  form.addEventListener('submit', updateEta);
+  document.getElementById('languageToggle')?.addEventListener('click', () => { if (!confirmation.hidden) updateEta(); });
+})();
+

@@ -73,6 +73,12 @@
     const updated = order.updatedAt ? new Date(order.updatedAt).toLocaleString(document.documentElement.lang === 'te' ? 'te-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '';
     const trackingMarkup = `<div class="tracking-order-ref"><span>${t('Order reference', 'ఆర్డర్ రిఫరెన్స్')}</span><strong>${escapeHtml(order.id)}</strong></div><div class="tracking-current">${current[document.documentElement.lang === 'te' ? 1 : 0]}</div><ol class="tracking-timeline">${timeline}</ol><small class="tracking-updated">${updated ? `${t('Last updated', 'చివరిగా అప్‌డేట్ అయిన సమయం')}: ${escapeHtml(updated)}` : ''}</small>`;
     result.innerHTML = trackingMarkup;
+    if (order.status !== 'delivered') {
+      const eta = document.createElement('div');
+      eta.className = 'tracking-eta';
+      eta.innerHTML = `<span>${t('Estimated delivery', 'అంచనా డెలివరీ సమయం')}</span><strong>${t('Around 35–50 minutes after placing the order', 'ఆర్డర్ చేసిన తర్వాత సుమారు 35–50 నిమిషాలు')}</strong>`;
+      result.querySelector('.tracking-current')?.after(eta);
+    }
     result.hidden = false;
     if (order.status === 'new') {
       quickCancel.innerHTML = `<strong class="tracking-countdown" aria-live="polite"></strong><button class="tracking-cancel-button" type="button">${t('Cancel order', 'ఆర్డర్ రద్దు చేయండి')}</button>`;

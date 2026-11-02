@@ -447,6 +447,9 @@ html[lang="te"] .payment-method::before{content:"03  చెల్లింపు
 .order-confirmation pre{border-radius:14px;background:#fff;border-color:#eadbcf}
 .order-confirmation.order-confirmed h3{display:flex;align-items:center;gap:10px;animation:order-confirm-title .42s cubic-bezier(.2,.8,.2,1) both}
 .order-confirmation.order-confirmed h3::before{content:"✓";display:inline-grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:2px solid #b84b2c;border-radius:50%;background:radial-gradient(circle,#fff8ed 0 42%,transparent 45%),conic-gradient(#d89039 0 10deg,transparent 10deg 42deg,#d89039 42deg 52deg,transparent 52deg 87deg,#d89039 87deg 97deg,transparent 97deg 132deg,#d89039 132deg 142deg,transparent 142deg 177deg,#d89039 177deg 187deg,transparent 187deg 222deg,#d89039 222deg 232deg,transparent 232deg 267deg,#d89039 267deg 277deg,transparent 277deg 312deg,#d89039 312deg 322deg,transparent 322deg);color:#a83d24;font:800 20px/1 var(--sans);box-shadow:0 0 0 4px rgba(216,144,57,.14),0 5px 13px rgba(112,59,31,.16);animation:order-confirm-wheel .72s cubic-bezier(.2,.8,.2,1) both}
+.order-eta,.tracking-eta{display:grid;gap:5px;margin:12px 0;padding:13px 15px;border:1px solid #ead5b8;border-left:4px solid #c65a2d;border-radius:12px;background:linear-gradient(110deg,#fff5e9,#fffdfa);color:#78513b;font-size:12px;line-height:1.45}
+.order-eta::before,.tracking-eta::before{content:"ETA";color:#a64a2d;font-size:9px;font-weight:800;letter-spacing:.14em}
+.tracking-eta strong{color:#30231e;font-size:14px}
 @keyframes order-confirm-title{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes order-confirm-wheel{from{opacity:0;transform:scale(.55) rotate(-180deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 #orderConfirmation .button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;margin:4px 8px 4px 0;text-decoration:none}
