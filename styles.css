@@ -445,9 +445,14 @@ html[lang="te"] .payment-method::before{content:"03  చెల్లింపు
 .checkout-form>.button:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(169,67,32,.26)}
 .order-confirmation{padding-top:22px;border-color:#eadbcf}
 .order-confirmation pre{border-radius:14px;background:#fff;border-color:#eadbcf}
+.order-confirmation.order-confirmed h3{display:flex;align-items:center;gap:10px;animation:order-confirm-title .42s cubic-bezier(.2,.8,.2,1) both}
+.order-confirmation.order-confirmed h3::before{content:"✓";display:inline-grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:2px solid #27804b;border-radius:50%;background:radial-gradient(circle,#e6f3e9 0 48%,transparent 51%),conic-gradient(#27804b 0 10deg,transparent 10deg 42deg,#27804b 42deg 52deg,transparent 52deg 87deg,#27804b 87deg 97deg,transparent 97deg 132deg,#27804b 132deg 142deg,transparent 142deg 177deg,#27804b 177deg 187deg,transparent 187deg 222deg,#27804b 222deg 232deg,transparent 232deg 267deg,#27804b 267deg 277deg,transparent 277deg 312deg,#27804b 312deg 322deg,transparent 322deg);color:#27804b;font:700 18px/1 var(--sans);animation:order-confirm-wheel .72s cubic-bezier(.2,.8,.2,1) both}
+@keyframes order-confirm-title{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes order-confirm-wheel{from{opacity:0;transform:scale(.55) rotate(-180deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 #orderConfirmation .button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;margin:4px 8px 4px 0;text-decoration:none}
 @media(max-width:760px){.checkout-panel{margin:20px 12px 0;padding:24px 18px;border-radius:20px}.checkout-copy{padding-bottom:16px}.checkout-copy h3{font-size:29px}.checkout-copy p{font-size:13px}.checkout-form{gap:14px;margin-top:18px}.pricing-inputs{grid-template-columns:1fr;gap:12px}.pricing-field{padding:12px}.price-breakdown{padding:12px 14px}.payment-method{padding:14px}.payment-options{display:grid;grid-template-columns:1fr}.checkout-form .payment-option{width:100%;box-sizing:border-box}.checkout-form>.button{width:100%}.order-confirmation pre{font-size:12px;padding:12px}#orderConfirmation .button{width:100%;margin:5px 0}}
 @media(prefers-reduced-motion:reduce){.checkout-form input,.checkout-form textarea,.checkout-form select,.checkout-form .payment-option,.checkout-form>.button{transition:none}}
+@media(prefers-reduced-motion:reduce){.order-confirmation.order-confirmed h3,.order-confirmation.order-confirmed h3::before{animation:none}}
 
 /* Payment choice cards */
 .payment-method{padding:20px;border-color:#eadbcf;border-radius:18px;background:linear-gradient(145deg,#fff 0%,#fffaf6 100%)}

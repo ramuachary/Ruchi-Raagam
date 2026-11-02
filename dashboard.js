@@ -62,7 +62,8 @@
   let period = 'today';
   let currentPage = 'orders';
   let toastTimer;
-  const toast = message => { toastEl.textContent = message; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600); };
+  const toast = message => { toastEl.classList.remove('order-received-toast'); toastEl.textContent = message; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600); };
+  const orderReceivedToast = order => { toastEl.classList.add('order-received-toast'); toastEl.innerHTML = `<span class="order-toast-wheel" aria-hidden="true">✓</span><span class="order-toast-copy"><strong>Order received</strong><small>${escapeHtml(order.customer?.name || 'Customer')} · ${money(order.total)}</small></span>`; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3000); };
   const now = new Date();
   document.getElementById('today').textContent = new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
 
@@ -261,7 +262,7 @@
   });
   const notify = order => {
     playNewOrderSound();
-    render(); toast(`New order from ${order.customer?.name || 'customer'}`);
+    render(); orderReceivedToast(order);
     if ('Notification' in window && Notification.permission === 'granted') new Notification('Ruchi Raagam — New order', { body: `${order.customer?.name || 'Customer'} · ${money(order.total)} · ${order.items?.length || 0} items` });
   };
   window.addEventListener('storage', event => { if (event.key === KEY) render(); });
