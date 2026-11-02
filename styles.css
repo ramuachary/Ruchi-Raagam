@@ -954,3 +954,7 @@ header .brand-caption{display:block;padding-left:2px;color:#886449;font:600 7px/
 @media(max-width:760px){header .nav>a.brand{gap:6px}header .brand-flower{width:32px;height:32px;flex-basis:32px}header .brand-name{font-size:clamp(20px,5.6vw,24px)}header .brand-caption{font-size:6px;letter-spacing:.24em}}
 @media(max-width:380px){header .nav>a.brand{gap:5px}header .brand-flower{width:28px;height:28px;flex-basis:28px}header .brand-name{font-size:19px}header .brand-caption{font-size:5.5px}}
 
+#menu .reorder-last-button{display:flex;align-items:center;gap:8px;margin:-2px 0 12px;padding:9px 14px;border:1px solid #d9b38c;border-radius:999px;background:#fff8ef;color:#9e4527;font:700 12px/1.2 var(--sans);cursor:pointer;transition:background .2s ease,transform .2s ease,border-color .2s ease}
+#menu .reorder-last-button:hover{background:#f8e9d8;border-color:#bd5528;transform:translateY(-1px)}
+#menu .reorder-last-button[hidden]{display:none}
+@media(max-width:600px){#menu .reorder-last-button{max-width:100%;font-size:11px;padding:9px 12px}}
