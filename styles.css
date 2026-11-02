@@ -929,4 +929,20 @@ header .brand:hover{border-color:#d6a877;box-shadow:0 8px 20px rgba(94,54,25,.15
 @media(max-width:760px){header .brand{display:inline-flex!important;visibility:visible;flex:0 0 auto;min-width:0}header .brand-logo{display:block!important;visibility:visible;opacity:1;max-width:none}header #navLinks{display:none!important}}
 @media(max-width:760px){header .nav>a.brand{position:relative;z-index:5;width:max-content;max-width:none;flex:0 0 auto;overflow:visible}header .nav>a.brand>img.brand-logo{width:clamp(136px,40vw,156px)!important;height:auto!important;max-width:none!important;flex:0 0 auto;object-fit:contain}}
 @media(max-width:380px){header .nav>a.brand>img.brand-logo{width:clamp(126px,38vw,140px)!important}}
+/* Keep the supplied logo artwork clean; no decorative badge around it. */
+header .nav>a.brand{display:inline-flex!important;align-items:center;justify-content:flex-start;box-sizing:border-box;width:auto;max-width:none;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;flex:0 0 auto;line-height:0}
+header .nav>a.brand>img.brand-logo{display:block!important;visibility:visible;opacity:1;width:clamp(160px,18vw,190px)!important;max-width:none!important;height:auto!important;object-fit:contain;filter:none!important;transform:none!important}
+header .nav>a.brand:hover>img.brand-logo{filter:none!important;transform:none!important}
+@media(max-width:760px){header .nav>a.brand>img.brand-logo{width:clamp(136px,39vw,158px)!important}}
+@media(max-width:380px){header .nav>a.brand>img.brand-logo{width:clamp(124px,37vw,138px)!important}}
+/* Responsive Ruchi Raagam wordmark */
+header .nav>a.brand{display:inline-flex!important;align-items:center;gap:8px;width:auto;max-width:none;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;line-height:1;overflow:visible;flex:0 0 auto}
+header .brand-flower{display:block;width:38px;height:38px;flex:0 0 38px;fill:none;stroke:#bd5528;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+header .brand-wordmark{display:flex;flex-direction:column;align-items:flex-start;gap:2px;white-space:nowrap}
+header .brand-name{display:block;color:#30231b;font:700 27px/.92 'Cormorant Garamond',Georgia,serif;letter-spacing:-.055em}
+header .brand-name span{color:#30231b;margin:0}
+header .brand-name b{color:#bd5528;font-weight:700}
+header .brand-caption{display:block;padding-left:2px;color:#886449;font:600 7px/1.2 var(--sans);letter-spacing:.28em}
+@media(max-width:760px){header .nav>a.brand{gap:6px}header .brand-flower{width:32px;height:32px;flex-basis:32px}header .brand-name{font-size:clamp(20px,5.6vw,24px)}header .brand-caption{font-size:6px;letter-spacing:.24em}}
+@media(max-width:380px){header .nav>a.brand{gap:5px}header .brand-flower{width:28px;height:28px;flex-basis:28px}header .brand-name{font-size:19px}header .brand-caption{font-size:5.5px}}
 

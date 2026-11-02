@@ -1,11 +1,47 @@
 (() => {
   const KEY = 'ruchi-raagam-orders-v1';
+  const REVIEWS_KEY = 'ruchi-raagam-reviews-v1';
   const labels = { new: 'New', accepted: 'Accepted', preparing: 'Preparing', ready: 'Ready', out_for_delivery: 'Out for delivery', picked_up: 'Picked up', delivered: 'Delivered', cancelled: 'Cancelled' };
   const paymentStatusLabels = { unpaid: 'Payment pending', paid: 'Payment accepted', failed: 'Cancelled / failed', refunded: 'Refunded' };
   const terminal = new Set(['delivered', 'picked_up', 'cancelled']);
   const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value || 0));
+  let notificationAudio;
+  const unlockNotificationAudio = () => {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      notificationAudio ||= new AudioContextClass();
+      if (notificationAudio.state === 'suspended') notificationAudio.resume().catch(() => {});
+    } catch { /* Browser audio is optional. */ }
+  };
+  document.addEventListener('pointerdown', unlockNotificationAudio, { once: true, passive: true });
+  document.addEventListener('keydown', unlockNotificationAudio, { once: true });
+  const playNewOrderSound = () => {
+    unlockNotificationAudio();
+    if (!notificationAudio) return;
+    const play = () => {
+      const now = notificationAudio.currentTime;
+      [659.25, 783.99, 1046.5].forEach((frequency, index) => {
+        const start = now + index * 0.13;
+        const oscillator = notificationAudio.createOscillator();
+        const volume = notificationAudio.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        volume.gain.setValueAtTime(0.0001, start);
+        volume.gain.exponentialRampToValueAtTime(0.09, start + 0.025);
+        volume.gain.exponentialRampToValueAtTime(0.0001, start + 0.48);
+        oscillator.connect(volume);
+        volume.connect(notificationAudio.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.5);
+      });
+    };
+    if (notificationAudio.state === 'running') play();
+    else notificationAudio.resume().then(play).catch(() => {});
+  };
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
+  const loadReviews = () => { try { return JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]'); } catch { return []; } };
   const save = orders => { try { localStorage.setItem(KEY, JSON.stringify(orders)); window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: orders })); } catch { toast('Could not save orders in this browser.'); } };
   const acceptExpiredOrders = () => {
     const orders = load();
@@ -39,7 +75,7 @@
     if (pageTitle) { pageTitle.textContent = '☰  Order List'; pageTitle.classList.add('dashboard-page-title'); }
     const sidebar = document.createElement('aside');
     sidebar.className = 'admin-sidebar';
-    sidebar.innerHTML = `<a class="admin-side-brand" href="index.html"><span class="admin-brand-mark">✦</span><span>Ruchi <b>Raagam</b><small>RESTAURANT ADMIN</small></span></a><nav class="admin-nav" aria-label="Dashboard navigation"><button type="button" data-page="dashboard"><span>⌂</span>Dashboard</button><button type="button" data-page="orders" class="active"><span>▤</span>Orders</button><button type="button" data-page="menus"><span>♨</span>Menus</button><button type="button" data-page="customers"><span>♙</span>Customers</button><button type="button" data-page="analytics"><span>▥</span>Analytics</button></nav><div class="sidebar-note quick-actions"><span>QUICK ACTIONS</span><strong>Jump right in</strong><small>Open a view directly.</small><button type="button" data-page="orders">▤ &nbsp; View orders <b>↗</b></button><button type="button" data-page="analytics">▥ &nbsp; Sales insights <b>↗</b></button></div><div class="sidebar-footer">Ruchi Raagam Admin<br>Hyderabad · SR Nagar</div>`;
+    sidebar.innerHTML = `<a class="admin-side-brand" href="index.html"><span class="admin-brand-mark">✦</span><span>Ruchi <b>Raagam</b><small>RESTAURANT ADMIN</small></span></a><nav class="admin-nav" aria-label="Dashboard navigation"><button type="button" data-page="dashboard"><span>⌂</span>Dashboard</button><button type="button" data-page="orders" class="active"><span>▤</span>Orders</button><button type="button" data-page="menus"><span>♨</span>Menus</button><button type="button" data-page="customers"><span>♙</span>Customers</button><button type="button" data-page="reviews"><span>★</span>Reviews</button><button type="button" data-page="analytics"><span>▥</span>Analytics</button></nav><div class="sidebar-note quick-actions"><span>QUICK ACTIONS</span><strong>Jump right in</strong><small>Open a view directly.</small><button type="button" data-page="orders">▤ &nbsp; View orders <b>↗</b></button><button type="button" data-page="analytics">▥ &nbsp; Sales insights <b>↗</b></button></div><div class="sidebar-footer">Ruchi Raagam Admin<br>Hyderabad · SR Nagar</div>`;
     const module = document.createElement('section');
     module.id = 'adminModuleView';
     module.className = 'admin-module-view';
@@ -56,15 +92,15 @@
     currentPage = page;
     adminLayout.sidebar.querySelectorAll('[data-page]').forEach(button => button.classList.toggle('active', button.dataset.page === page));
     const heading = adminLayout.main.querySelector('.heading h1');
-    heading.textContent = ({dashboard:'Dashboard overview',orders:'Order list',menus:'Menu performance',customers:'Customers',analytics:'Analytics'})[page];
+    heading.textContent = ({dashboard:'Dashboard overview',orders:'Order list',menus:'Menu performance',customers:'Customers',reviews:'Customer reviews',analytics:'Analytics'})[page];
     const showOrders = page === 'orders';
     const toolbar = adminLayout.main.querySelector('.toolbar');
-    toolbar.hidden = false;
+    toolbar.hidden = page === 'reviews';
     toolbar.classList.toggle('module-toolbar', !showOrders);
     toolbar.querySelector('.tabs').hidden = !showOrders;
     toolbar.querySelector('label').hidden = !showOrders;
     ordersEl.hidden = !showOrders;
-    adminLayout.main.querySelector('.metrics').hidden = page === 'menus' || page === 'customers';
+    adminLayout.main.querySelector('.metrics').hidden = page === 'menus' || page === 'customers' || page === 'reviews';
     moduleView.hidden = showOrders;
     render();
   };
@@ -134,7 +170,7 @@
   }
 
   function renderModule(orders) {
-    if (!moduleView || !['dashboard','menus','customers','analytics'].includes(currentPage)) return;
+    if (!moduleView || !['dashboard','menus','customers','reviews','analytics'].includes(currentPage)) return;
     const revenue = orders.filter(order => order.status !== 'cancelled').reduce((sum, order) => sum + Number(order.total || 0), 0);
     const itemTotals = new Map();
     const customers = new Map();
@@ -149,7 +185,12 @@
       });
     });
     const topItems = [...itemTotals.values()].sort((a,b) => b.quantity-a.quantity).slice(0,6);
-    if (currentPage === 'customers') {
+    if (currentPage === 'reviews') {
+      const reviews = loadReviews().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+      const average = reviews.length ? (reviews.reduce((sum,review)=>sum+Number(review.rating||0),0)/reviews.length).toFixed(1) : '—';
+      const cards = reviews.map(review=>`<article class="dashboard-review-card"><div class="dashboard-review-top"><strong>${escapeHtml(review.name||'Guest')}</strong><time>${new Date(review.createdAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}</time></div><div class="dashboard-review-stars" aria-label="${Number(review.rating)||0} out of 5 stars">${'★'.repeat(Math.max(0,Math.min(5,Number(review.rating)||0)))}<span>${'★'.repeat(5-Math.max(0,Math.min(5,Number(review.rating)||0)))}</span></div><p>${escapeHtml(review.message)}</p></article>`).join('');
+      moduleView.innerHTML = `<div class="module-heading"><span class="eyebrow">GUEST FEEDBACK</span><h2>Customer reviews</h2><p>Reviews submitted on the website appear here as they arrive.</p></div><div class="review-overview"><article><span>Total reviews</span><strong>${reviews.length}</strong></article><article><span>Average rating</span><strong>${average}${reviews.length?' / 5':''}</strong></article></div><div class="dashboard-review-list">${cards||'<div class="empty"><strong>No reviews yet</strong>Customer feedback will show here after a review is submitted.</div>'}</div>`;
+    } else if (currentPage === 'customers') {
       const rows = [...customers.values()].sort((a,b)=>b.spend-a.spend).map(customer=>`<tr><td><strong>${escapeHtml(customer.name)}</strong><small>${escapeHtml(customer.phone)}</small></td><td>${customer.count}</td><td>${money(customer.spend)}</td></tr>`).join('');
       moduleView.innerHTML = `<div class="module-heading"><span class="eyebrow">CUSTOMER BOOK</span><h2>People who order from us</h2><p>Customer details are summarized from orders in the selected date range.</p></div><div class="module-table-wrap"><table class="module-table"><thead><tr><th>Customer</th><th>Orders</th><th>Total spent</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="module-empty">Customer details will appear after orders arrive.</td></tr>'}</tbody></table></div>`;
     } else if (currentPage === 'menus') {
@@ -219,12 +260,15 @@
     else toast('Allow notifications in your browser settings.');
   });
   const notify = order => {
+    playNewOrderSound();
     render(); toast(`New order from ${order.customer?.name || 'customer'}`);
     if ('Notification' in window && Notification.permission === 'granted') new Notification('Ruchi Raagam — New order', { body: `${order.customer?.name || 'Customer'} · ${money(order.total)} · ${order.items?.length || 0} items` });
   };
   window.addEventListener('storage', event => { if (event.key === KEY) render(); });
   window.addEventListener('rr:local-orders-changed', () => render());
   window.addEventListener('rr:order-added', event => notify(event.detail));
+  window.addEventListener('storage', event => { if (event.key === REVIEWS_KEY) render(); });
+  window.addEventListener('rr:review-added', event => { render(); toast(`New review from ${event.detail?.name || 'guest'}`); });
   setInterval(acceptExpiredOrders, 1000);
   acceptExpiredOrders();
   render();

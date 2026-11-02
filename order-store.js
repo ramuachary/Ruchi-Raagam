@@ -1,5 +1,39 @@
 (() => {
   const STORAGE_KEY = 'ruchi-raagam-orders-v1';
+  let soundContext;
+  const unlockOrderSound = () => {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      soundContext ||= new AudioContextClass();
+      if (soundContext.state === 'suspended') soundContext.resume().catch(() => {});
+    } catch { /* Sound is optional when the browser does not support Web Audio. */ }
+  };
+  document.addEventListener('pointerdown', unlockOrderSound, { once: true, passive: true });
+  document.addEventListener('keydown', unlockOrderSound, { once: true });
+  window.addEventListener('rr:order-added', () => {
+    unlockOrderSound();
+    if (!soundContext) return;
+    const play = () => {
+      const now = soundContext.currentTime;
+      [523.25, 659.25, 783.99].forEach((frequency, index) => {
+        const start = now + index * 0.12;
+        const oscillator = soundContext.createOscillator();
+        const volume = soundContext.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        volume.gain.setValueAtTime(0.0001, start);
+        volume.gain.exponentialRampToValueAtTime(0.075, start + 0.025);
+        volume.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+        oscillator.connect(volume);
+        volume.connect(soundContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.44);
+      });
+    };
+    if (soundContext.state === 'running') play();
+    else soundContext.resume().then(play).catch(() => {});
+  });
   const readOrders = () => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }

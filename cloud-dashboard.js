@@ -1,5 +1,6 @@
 (() => {
   const KEY = 'ruchi-raagam-orders-v1';
+  const REVIEWS_KEY = 'ruchi-raagam-reviews-v1';
   const ADMIN = 'ramuachary8763@gmail.com';
   const config = window.RUCHI_RAAGAM_SUPABASE;
   const configured = config?.url && !config.url.includes('YOUR_PROJECT_REF') && config.publishableKey && !config.publishableKey.includes('YOUR_SUPABASE_');
@@ -49,6 +50,7 @@
     payment: row.payment_method, paymentProvider: row.payment_provider, paymentStatus: row.payment_status, paymentId: row.razorpay_payment_id, fulfillment: row.fulfillment,
     status: row.status, sentVia: row.sent_via, backend: true
   });
+  const toReview = row => ({ id: row.id, name: row.reviewer_name || 'Guest', rating: row.rating, message: row.message, createdAt: row.created_at, backend: true });
 
   window.rrSupabaseReady?.then(async client => {
     if (!configured || !client) return;
@@ -66,6 +68,13 @@
       const { data, error } = await client.from('orders').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       publish((data || []).map(toOrder));
+    };
+    const fetchReviews = async () => {
+      const { data, error } = await client.from('reviews').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      const localOnly = (() => { try { return JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]').filter(review => !review.backend); } catch { return []; } })();
+      localStorage.setItem(REVIEWS_KEY, JSON.stringify([...localOnly, ...(data || []).map(toReview)]));
+      window.dispatchEvent(new StorageEvent('storage', { key: REVIEWS_KEY }));
     };
     const syncLocal = async event => {
       if (syncing || !Array.isArray(event.detail)) return;
@@ -101,6 +110,7 @@
       try {
         syncing = true;
         await fetchOrders();
+        await fetchReviews().catch(error => console.error('Could not load customer reviews yet:', error));
       } catch (error) {
         gate.hidden = false;
         status.textContent = `Could not load shared orders: ${error.message}`;
@@ -113,6 +123,12 @@
             if (fresh) window.dispatchEvent(new CustomEvent('rr:order-added', { detail: fresh }));
           }
         } catch (error) { console.error('Could not refresh live orders:', error); }
+      }).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, async payload => {
+        try {
+          await fetchReviews();
+          const fresh = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]').find(review => review.id === payload.new.id);
+          if (fresh) window.dispatchEvent(new CustomEvent('rr:review-added', { detail: fresh }));
+        } catch (error) { console.error('Could not refresh customer reviews:', error); }
       }).subscribe();
       window.addEventListener('rr:local-orders-changed', syncLocal);
     };
