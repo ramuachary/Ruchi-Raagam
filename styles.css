@@ -959,6 +959,7 @@ header .brand-caption{display:block;padding-left:2px;color:#886449;font:600 7px/
 #menu .reorder-last-button[hidden]{display:none}
 @media(max-width:600px){#menu .reorder-last-button{max-width:100%;font-size:11px;padding:9px 12px}}
 .support-card{max-width:960px}
+.support-section[hidden]{display:none!important}
 .support-section:not([hidden]){position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:24px;overflow-y:auto;background:rgba(35,25,19,.58);backdrop-filter:blur(5px)}
 .support-section:not([hidden]) .wrap{width:min(960px,100%);max-width:none;padding:0}
 .support-section:not([hidden]) .support-card{position:relative;max-height:min(88vh,820px);overflow-y:auto;box-shadow:0 28px 90px rgba(20,12,8,.28)}
