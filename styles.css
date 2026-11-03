@@ -943,6 +943,15 @@ header .nav>a.brand>img.brand-logo{display:block!important;visibility:visible;op
 header .nav>a.brand:hover>img.brand-logo{filter:none!important;transform:none!important}
 @media(max-width:760px){header .nav>a.brand>img.brand-logo{width:clamp(136px,39vw,158px)!important}}
 @media(max-width:380px){header .nav>a.brand>img.brand-logo{width:clamp(124px,37vw,138px)!important}}
+/* Keep the primary menu action visible on phones; contact actions live in the menu drawer. */
+@media(max-width:760px){
+  header .nav-cta{display:inline-flex!important;align-items:center;justify-content:center;order:4;margin-left:auto;padding:9px 11px;font-size:9px;white-space:nowrap}
+  header .mobile-menu-card{display:none!important}
+  header .menu-toggle{order:5}
+  .menu-drawer-contact{display:grid;gap:10px;margin:14px 0 4px;padding-top:14px;border-top:1px solid var(--line);list-style:none}
+  .menu-drawer-contact a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:13px;text-decoration:none}
+}
+@media(max-width:380px){header .nav-cta{padding:8px 8px;font-size:8px}}
 /* Responsive Ruchi Raagam wordmark */
 header .nav>a.brand{display:inline-flex!important;align-items:center;gap:8px;width:auto;max-width:none;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;line-height:1;overflow:visible;flex:0 0 auto}
 header .brand-flower{display:block;width:38px;height:38px;flex:0 0 38px;fill:none;stroke:#bd5528;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
