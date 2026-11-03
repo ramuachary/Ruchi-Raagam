@@ -959,6 +959,15 @@ header .brand-caption{display:block;padding-left:2px;color:#886449;font:600 7px/
 #menu .reorder-last-button[hidden]{display:none}
 @media(max-width:600px){#menu .reorder-last-button{max-width:100%;font-size:11px;padding:9px 12px}}
 .support-card{max-width:960px}
+.support-section:not([hidden]){position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:24px;overflow-y:auto;background:rgba(35,25,19,.58);backdrop-filter:blur(5px)}
+.support-section:not([hidden]) .wrap{width:min(960px,100%);max-width:none;padding:0}
+.support-section:not([hidden]) .support-card{position:relative;max-height:min(88vh,820px);overflow-y:auto;box-shadow:0 28px 90px rgba(20,12,8,.28)}
+.help-close{position:absolute;top:16px;right:16px;display:grid;place-items:center;width:38px;height:38px;border:1px solid #ead8c7;border-radius:50%;background:#fff;color:#4b3528;font-size:25px;line-height:1;cursor:pointer}
+.help-close:hover{background:#fff2e8;color:#b64b25}
+body.help-open{overflow:hidden}
+.checkout-tracking{padding:20px 0 0;background:transparent}
+.checkout-tracking .wrap{width:100%;max-width:none;padding:0}
+.checkout-tracking .tracking-card{padding:20px;border-radius:14px;box-shadow:none}
 .support-card h2{margin-top:12px}
 .support-faqs{margin:24px 0 0;border-top:1px solid #eee4da}
 .support-faqs details,.support-track-details{border-bottom:1px solid #eee4da}
