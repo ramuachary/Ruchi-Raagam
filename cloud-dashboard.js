@@ -48,7 +48,7 @@
     distanceKm: row.distance_km, deliveryCharge: row.delivery_charge,
     discount: row.discount, couponCode: row.coupon_code,
     payment: row.payment_method, paymentProvider: row.payment_provider, paymentStatus: row.payment_status, paymentId: row.razorpay_payment_id, fulfillment: row.fulfillment,
-    status: row.status, sentVia: row.sent_via, backend: true
+    status: row.status, sentVia: row.sent_via, acceptedBy: row.accepted_by || '', deliveryPerson: row.delivery_person || '', backend: true
   });
   const toReview = row => ({ id: row.id, name: row.reviewer_name || 'Guest', rating: row.rating, message: row.message, createdAt: row.created_at, backend: true });
 
@@ -91,8 +91,8 @@
       const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       for (const order of latest.filter(item => item.backend && uuid.test(item.id))) {
         const previous = lastOrders.find(item => item.id === order.id);
-        if (!previous || previous.status !== order.status || previous.fulfillment !== order.fulfillment || previous.paymentStatus !== order.paymentStatus) {
-          const { error } = await client.from('orders').update({ status: order.status, fulfillment: order.fulfillment, payment_status: order.paymentStatus || 'unpaid' }).eq('id', order.id);
+        if (!previous || previous.status !== order.status || previous.fulfillment !== order.fulfillment || previous.paymentStatus !== order.paymentStatus || previous.acceptedBy !== order.acceptedBy || previous.deliveryPerson !== order.deliveryPerson) {
+          const { error } = await client.from('orders').update({ status: order.status, fulfillment: order.fulfillment, payment_status: order.paymentStatus || 'unpaid', accepted_by: order.acceptedBy || '', delivery_person: order.deliveryPerson || '' }).eq('id', order.id);
           if (error) console.error('Could not sync order status:', error);
         }
       }

@@ -7,7 +7,9 @@ The website code supports shared Supabase orders, a live restaurant dashboard, c
 1. Open the restaurant's Supabase project.
 2. `backend-config.js` already contains its Project URL and browser-safe **publishable** key. Never put a Supabase secret/service-role key in this file.
 
-3. In Supabase Dashboard → SQL Editor, paste and run `supabase/migrations/202611160001_current_menu_order_validation.sql` once. It updates current menu price/name checks and adds a safe retry RPC so a network timeout followed by retry cannot create duplicate orders.
+3. In Supabase Dashboard → SQL Editor, paste and run these migrations once, in order:
+   - `supabase/migrations/202611160001_current_menu_order_validation.sql` updates current menu price/name checks and adds a safe retry RPC so a network timeout followed by retry cannot create duplicate orders.
+   - `supabase/migrations/202611160002_order_staff_and_delivery_assignment.sql` adds the accepted-by and delivery-person fields and returns the assigned delivery person's name in phone-verified order tracking.
 
 4. In Supabase Authentication, create the restaurant admin `ramuachary8763@gmail.com`, configure Email sign-in, and set the deployed HTTPS website and `/dashboard.html` as allowed redirect URLs. Customer accounts are enabled by the website; phone OTP additionally needs an SMS provider.
 5. Deploy the updated site over HTTPS. Confirmed ordinary orders are submitted to Supabase; the dashboard listens for Realtime and refreshes every 15 seconds as a fallback. If syncing fails, the customer sees the problem and can safely retry.
@@ -40,7 +42,7 @@ Razorpay's merchant account must be approved and Live Mode enabled before live c
 ## What is shared and what is not
 
 - Normal website orders are saved to Supabase immediately when the customer confirms checkout; an email or WhatsApp send is not required for dashboard delivery.
-- The authenticated dashboard listens for database Realtime updates, refreshes every 15 seconds as a fallback, and writes order, fulfillment, and payment status changes back to Supabase.
+- The authenticated dashboard listens for database Realtime updates, refreshes every 15 seconds as a fallback, and writes order, fulfillment, payment status, accepted-by, and delivery-person changes back to Supabase.
 - Browser notifications require the dashboard to remain open and notification permission to be granted.
 - Email order notifications use the website's configured email submission flow; they are separate from saving a shared order.
 - The 30-second cancel/automatic-accept status rule works in the tracking page and dashboard while one of those pages is open. Exact scheduled updates when every browser is closed require a server-side scheduled job.
