@@ -212,6 +212,17 @@
     });
     save(orders); render();
   }
+  function askAcceptor(order) {
+    const previous = order.acceptedBy && order.acceptedBy !== 'Restaurant admin' ? order.acceptedBy : '';
+    const name = window.prompt('Who is accepting this order? Enter their name:', previous);
+    if (name === null) return null;
+    const cleaned = name.trim();
+    if (!cleaned) {
+      window.alert('Please enter the staff member name to accept this order.');
+      return null;
+    }
+    return cleaned.slice(0, 120);
+  }
   ordersEl.addEventListener('click', event => {
     const button = event.target.closest('.advance');
     if (!button) return;
@@ -219,7 +230,9 @@
     const order = load().find(item => item.id === card.dataset.id);
     if (!order) return;
     const status = nextStatus(order);
-    updateOrder(order.id, { status });
+    const acceptedBy = status === 'accepted' ? askAcceptor(order) : undefined;
+    if (status === 'accepted' && !acceptedBy) return;
+    updateOrder(order.id, { status, ...(acceptedBy ? { acceptedBy } : {}) });
     toast(`Order ${order.id}: ${labels[status]}`);
   });
   ordersEl.addEventListener('change', event => {
@@ -227,7 +240,10 @@
     if (!card) return;
     if (event.target.matches('.fulfillment')) updateOrder(card.dataset.id, { fulfillment: event.target.value });
     if (event.target.matches('.status')) {
-      updateOrder(card.dataset.id, { status: event.target.value });
+      const order = load().find(item => item.id === card.dataset.id);
+      const acceptedBy = event.target.value === 'accepted' && order ? askAcceptor(order) : undefined;
+      if (event.target.value === 'accepted' && !acceptedBy) { render(); return; }
+      updateOrder(card.dataset.id, { status: event.target.value, ...(acceptedBy ? { acceptedBy } : {}) });
       toast(`Order status: ${labels[event.target.value]}`);
     }
     if (event.target.matches('.payment-status')) {
