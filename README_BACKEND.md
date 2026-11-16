@@ -1,35 +1,18 @@
 # Ruchi Raagam live orders and payments
 
-The website code supports shared Supabase orders, a live restaurant dashboard, customer order tracking, and Razorpay Standard Checkout. It is **not connected yet** while `backend-config.js` contains placeholders. Production activation needs the restaurant's Supabase project and Razorpay merchant credentials.
+The website code supports shared Supabase orders, a live restaurant dashboard, customer order tracking, and Razorpay Standard Checkout. `backend-config.js` is connected to the Ruchi Raagam Supabase project. Razorpay still requires merchant credentials and server-side setup before online gateway payments can work.
 
 ## 1. Connect Supabase
 
-1. Create or open the restaurant's Supabase project.
-2. In Project Settings → API, copy the Project URL and the **publishable** key (the legacy `anon` key also works) into `backend-config.js`:
+1. Open the restaurant's Supabase project.
+2. `backend-config.js` already contains its Project URL and browser-safe **publishable** key. Never put a Supabase secret/service-role key in this file.
 
-   ```js
-   window.RUCHI_RAAGAM_SUPABASE = {
-     url: 'https://<project-ref>.supabase.co',
-     publishableKey: '<publishable-key>'
-   };
-   ```
+3. In Supabase Dashboard → SQL Editor, paste and run `supabase/migrations/202611160001_current_menu_order_validation.sql` once. It updates current menu price/name checks and adds a safe retry RPC so a network timeout followed by retry cannot create duplicate orders.
 
-   This key is designed for browser use with Row Level Security. Never put a Supabase secret/service-role key in this file.
+4. In Supabase Authentication, create the restaurant admin `ramuachary8763@gmail.com`, configure Email sign-in, and set the deployed HTTPS website and `/dashboard.html` as allowed redirect URLs. Customer accounts are enabled by the website; phone OTP additionally needs an SMS provider.
+5. Deploy the updated site over HTTPS. Confirmed ordinary orders are submitted to Supabase; the dashboard listens for Realtime and refreshes every 15 seconds as a fallback. If syncing fails, the customer sees the problem and can safely retry.
 
-3. Install the Supabase CLI, link this folder to the project, and apply every migration in filename order:
-
-   ```sh
-   supabase login
-   supabase link --project-ref <project-ref>
-   supabase db push
-   ```
-
-   The migrations are `202610260001_orders_dashboard.sql`, `202610270001_delivery_coupons.sql`, `202610270002_delivery_pincode.sql`, `202610270003_newsletter_and_price_validation.sql`, `202610270004_razorpay_checkout.sql`, `202610270005_gateway_payment_providers.sql`, `202610270006_customer_order_tracking.sql`, `202610290001_admin_payment_status.sql`, `202610290002_customer_order_cancellation_window.sql`, and `202610290003_customer_order_30_second_window.sql`.
-
-4. In Supabase Authentication, create the restaurant admin `ruchiragam@gmail.com`, configure Email sign-in, and set the deployed HTTPS website and `/dashboard.html` as allowed redirect URLs. Customer accounts are enabled by the website; phone OTP additionally needs an SMS provider.
-5. Deploy the static site over HTTPS. Once Supabase is configured, ordinary confirmed orders are submitted to Supabase and appear in the signed-in dashboard through Realtime. The customer tracking page also reads the shared order status.
-
-The database validates menu SKUs, prices, coupon math, and delivery charges. Anonymous customers can submit only through the validating `submit_order` function. Order reads and admin workflow changes are restricted to the authenticated restaurant email. Browser storage is only a local fallback and does not share orders between devices.
+The database validates menu SKUs, prices, coupon math, and delivery charges. Anonymous customers can submit only through the validating `submit_order` function. Order reads and admin workflow changes are restricted to the authenticated restaurant email `ramuachary8763@gmail.com`. Browser storage is only a local fallback and does not share orders between devices.
 
 ## 2. Deploy Razorpay checkout
 
@@ -57,7 +40,7 @@ Razorpay's merchant account must be approved and Live Mode enabled before live c
 ## What is shared and what is not
 
 - Normal website orders are saved to Supabase immediately when the customer confirms checkout; an email or WhatsApp send is not required for dashboard delivery.
-- The authenticated dashboard listens for database Realtime updates and writes order, fulfillment, and payment status changes back to Supabase.
+- The authenticated dashboard listens for database Realtime updates, refreshes every 15 seconds as a fallback, and writes order, fulfillment, and payment status changes back to Supabase.
 - Browser notifications require the dashboard to remain open and notification permission to be granted.
 - Email order notifications use the website's configured email submission flow; they are separate from saving a shared order.
 - The 30-second cancel/automatic-accept status rule works in the tracking page and dashboard while one of those pages is open. Exact scheduled updates when every browser is closed require a server-side scheduled job.

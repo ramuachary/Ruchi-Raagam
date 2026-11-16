@@ -59,6 +59,8 @@
     let syncing = false;
     let lastOrders = [];
     let activeUserId = '';
+    let refreshTimer = null;
+    let refreshInFlight = false;
     const publish = orders => {
       lastOrders = orders;
       localStorage.setItem(KEY, JSON.stringify(orders));
@@ -68,6 +70,13 @@
       const { data, error } = await client.from('orders').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       publish((data || []).map(toOrder));
+    };
+    const refreshOrdersSafely = async () => {
+      if (refreshInFlight || document.hidden || !activeUserId) return;
+      refreshInFlight = true;
+      try { await fetchOrders(); }
+      catch (error) { console.warn('Dashboard refresh failed; it will retry automatically:', error); }
+      finally { refreshInFlight = false; }
     };
     const fetchReviews = async () => {
       const { data, error } = await client.from('reviews').select('*').order('created_at', { ascending: false });
@@ -129,7 +138,17 @@
           const fresh = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]').find(review => review.id === payload.new.id);
           if (fresh) window.dispatchEvent(new CustomEvent('rr:review-added', { detail: fresh }));
         } catch (error) { console.error('Could not refresh customer reviews:', error); }
-      }).subscribe();
+      }).subscribe((channelStatus, channelError) => {
+        if (channelStatus === 'SUBSCRIBED') refreshOrdersSafely();
+        if (channelStatus === 'CHANNEL_ERROR' || channelStatus === 'TIMED_OUT' || channelStatus === 'CLOSED') {
+          console.warn('Dashboard live updates disconnected; automatic refresh remains active.', channelError || channelStatus);
+          refreshOrdersSafely();
+        }
+      });
+      if (!refreshTimer) refreshTimer = window.setInterval(refreshOrdersSafely, 15000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) refreshOrdersSafely();
+      });
       window.addEventListener('rr:local-orders-changed', syncLocal);
     };
     const { data: { user }, error } = await client.auth.getUser();

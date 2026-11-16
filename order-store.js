@@ -1,5 +1,13 @@
 (() => {
   const STORAGE_KEY = 'ruchi-raagam-orders-v1';
+  const makeUuid = () => {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
+      const random = Math.random() * 16 | 0;
+      return (char === 'x' ? random : (random & 3 | 8)).toString(16);
+    });
+  };
+  const languageIsTelugu = () => document.documentElement.lang === 'te';
   let soundContext;
   const unlockOrderSound = () => {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -38,6 +46,107 @@
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }
   };
+  const persistOrder = order => {
+    const orders = readOrders();
+    const index = orders.findIndex(item => item.id === order.id);
+    if (index < 0) return;
+    orders[index] = { ...orders[index], ...order };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch { return; }
+    window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: orders }));
+  };
+  const syncOrder = async order => {
+    const current = readOrders().find(item => item.id === order.id) || order;
+    if (!current.clientReference) current.clientReference = makeUuid();
+    current.cloudStatus = 'pending';
+    current.cloudSaveStarted = true;
+    activeOrder = current;
+    persistOrder(current);
+    setCloudStatus('pending');
+    try {
+      const client = await window.rrSupabaseReady;
+      if (!client) throw new Error('Backend is not connected.');
+      const { data, error } = await client.rpc('submit_order_idempotent', {
+        order_data: {
+          customer: current.customer, items: current.items, total: current.total,
+          subtotal: current.subtotal, distanceKm: current.distanceKm,
+          deliveryCharge: current.deliveryCharge, discount: current.discount,
+          couponCode: current.couponCode, payment: current.payment,
+          fulfillment: current.fulfillment || 'delivery'
+        },
+        p_client_reference: current.clientReference
+      });
+      if (error) throw error;
+      const latest = readOrders();
+      const saved = { ...current, ...(latest.find(item => item.id === current.id) || {}), id: data, backend: true, cloudStatus: 'synced', cloudSaveStarted: false };
+      activeOrder = saved;
+      const merged = [saved, ...latest.filter(item => item.id !== current.id && item.id !== data)];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      window.dispatchEvent(new CustomEvent('rr:order-cloud-saved', { detail: saved }));
+      window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: merged }));
+      setCloudStatus('synced');
+      return true;
+    } catch (error) {
+      console.error('Could not save order to the shared dashboard:', error);
+      const failed = { ...current, cloudStatus: 'failed', cloudError: error?.message || 'Network error', cloudSaveStarted: false };
+      activeOrder = failed;
+      persistOrder(failed);
+      setCloudStatus('failed', failed.cloudError);
+      window.dispatchEvent(new CustomEvent('rr:cloud-order-error', { detail: error }));
+      return false;
+    }
+  };
+  const ensureCloudStatus = () => {
+    const confirmation = document.getElementById('orderConfirmation');
+    if (!confirmation) return null;
+    let status = confirmation.querySelector('#orderCloudStatus');
+    if (!status) {
+      status = document.createElement('div');
+      status.id = 'orderCloudStatus';
+      status.className = 'order-cloud-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.id = 'retryCloudOrder';
+      retry.className = 'button';
+      retry.hidden = true;
+      retry.addEventListener('click', async () => {
+        if (!activeOrder || retry.disabled) return;
+        retry.disabled = true;
+        await syncOrder(activeOrder);
+        retry.disabled = false;
+      });
+      status.append(document.createElement('span'), retry);
+      confirmation.querySelector('#emailOrderStatus')?.after(status);
+    }
+    return status;
+  };
+  let activeOrder = null;
+  const setCloudStatus = (state, errorMessage = '') => {
+    const status = ensureCloudStatus();
+    if (!status) return;
+    const te = languageIsTelugu();
+    const text = status.querySelector('span');
+    const retry = status.querySelector('button');
+    if (state === 'synced') {
+      text.textContent = te ? 'ఆర్డర్ డాష్‌బోర్డ్‌కు చేరింది.' : 'Order synced to the restaurant dashboard.';
+      retry.hidden = true;
+      status.dataset.state = 'synced';
+    } else if (state === 'pending') {
+      text.textContent = te ? 'డాష్‌బోర్డ్‌కు ఆర్డర్ పంపిస్తున్నాం…' : 'Sending order to the dashboard…';
+      retry.hidden = true;
+      status.dataset.state = 'pending';
+    } else {
+      text.textContent = te ? 'ఆర్డర్ ఈ పరికరంలో సేవ్ అయింది; డాష్‌బోర్డ్‌కు పంపలేకపోయాం.' : 'Order is saved on this device, but could not reach the dashboard.';
+      if (errorMessage) text.title = errorMessage;
+      retry.textContent = te ? 'మళ్లీ ప్రయత్నించండి' : 'Retry sync';
+      retry.hidden = false;
+      status.dataset.state = 'failed';
+    }
+  };
+  document.getElementById('languageToggle')?.addEventListener('click', () => {
+    if (activeOrder) setCloudStatus(activeOrder.cloudStatus || 'pending', activeOrder.cloudError);
+  });
   const saveOrder = order => {
     const orders = readOrders();
     const existingIndex = orders.findIndex(item => item.id === order.id);
@@ -53,31 +162,10 @@
     orders.unshift(order);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); }
     catch { return; }
-    window.dispatchEvent(new CustomEvent('rr:order-added', { detail: order }));
-    if (window.rrSupabaseReady) {
-      window.rrSupabaseReady.then(async client => {
-        if (!client || order.cloudSaveStarted) return;
-        order.cloudSaveStarted = true;
-        try {
-          const { data, error } = await client.rpc('submit_order', { order_data: {
-            customer: order.customer, items: order.items, total: order.total,
-            subtotal: order.subtotal, distanceKm: order.distanceKm,
-            deliveryCharge: order.deliveryCharge, discount: order.discount,
-            couponCode: order.couponCode,
-            payment: order.payment, fulfillment: order.fulfillment || 'delivery'
-          }});
-          if (error) throw error;
-          const current = readOrders().filter(item => item.id !== order.id);
-          const saved = { ...order, id: data, backend: true };
-          current.unshift(saved);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-          window.dispatchEvent(new CustomEvent('rr:order-cloud-saved', { detail: saved }));
-        } catch (error) {
-          console.error('Could not save order to the shared dashboard:', error);
-          window.dispatchEvent(new CustomEvent('rr:cloud-order-error', { detail: error }));
-        }
-      });
-    }
+    activeOrder = { ...order, clientReference: order.clientReference || makeUuid(), cloudStatus: 'pending' };
+    persistOrder(activeOrder);
+    window.dispatchEvent(new CustomEvent('rr:order-added', { detail: activeOrder }));
+    syncOrder(activeOrder);
   };
 
   const form = document.getElementById('checkoutForm');
@@ -102,6 +190,7 @@
     const discount = coupon && subtotal >= coupon.minimum ? Math.min(subtotal, coupon.amount) : 0;
     draft = {
       id: `RR-${Date.now().toString(36).toUpperCase()}`,
+      clientReference: makeUuid(),
       createdAt: new Date().toISOString(),
       customer: { name: customer.name, phone: customer.phone, address: customer.address, landmark: customer.landmark, pincode: customer.pincode },
       items,
@@ -113,7 +202,12 @@
     };
     // Save a normal order as soon as the customer confirms it. Online gateway
     // orders are saved only after Razorpay verifies the payment.
-    if (draft.payment !== 'razorpay') saveOrder({ ...draft, sentVia: 'Website' });
+    if (draft.payment !== 'razorpay') {
+      activeOrder = { ...draft, sentVia: 'Website' };
+      ensureCloudStatus();
+      setCloudStatus('pending');
+      saveOrder(activeOrder);
+    }
   });
 
   document.getElementById('sendWhatsApp')?.addEventListener('click', () => {
