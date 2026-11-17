@@ -46,6 +46,8 @@
     customer: { name: row.customer_name, phone: row.phone, address: row.address, landmark: row.landmark, pincode: row.pincode, note: row.customer_note },
     items: row.items, total: row.total, subtotal: row.subtotal,
     distanceKm: row.distance_km, deliveryCharge: row.delivery_charge,
+    packagingCharge: row.packaging_charge, platformFee: row.platform_fee,
+    gstCharge: row.gst_charge, tip: row.tip,
     discount: row.discount, couponCode: row.coupon_code,
     payment: row.payment_method, paymentProvider: row.payment_provider, paymentStatus: row.payment_status, paymentId: row.razorpay_payment_id, fulfillment: row.fulfillment,
     status: row.status, sentVia: row.sent_via, acceptedBy: row.accepted_by || '', deliveryPerson: row.delivery_person || '', backend: true

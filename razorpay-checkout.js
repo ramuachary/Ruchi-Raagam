@@ -38,15 +38,19 @@
     }).filter(item => item.quantity > 0);
     const subtotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
     const distanceKm = Number(values.distanceKm);
-    const deliveryCharge = Math.max(0, Math.ceil(distanceKm - 7 - 1e-9)) * 5;
+    const deliveryCharge = subtotal < 199 ? Math.ceil(Math.max(distanceKm - 1e-9, 0)) * 12 : 0;
     const code = values.couponCode || '';
     const discount = code === 'RAGAM10' && subtotal >= 150 ? Math.round(subtotal * .10)
       : code === 'WELCOME50' && subtotal >= 350 ? 50
       : code === 'FEAST15' && subtotal >= 500 ? Math.round(subtotal * .15) : 0;
+    const packagingCharge = subtotal ? 10 : 0;
+    const platformFee = subtotal ? 5 : 0;
+    const gstCharge = Math.round(Math.max(0, subtotal - discount) * .05);
+    const tip = Number(values.tip || 0);
     return {
       customer: { name: values.name, phone: values.phone, address: values.address, landmark: values.landmark, pincode: values.pincode },
-      items, subtotal, distanceKm, deliveryCharge, discount, couponCode: code,
-      total: subtotal + deliveryCharge - discount, payment: 'razorpay', fulfillment: 'delivery',
+      items, subtotal, distanceKm, deliveryCharge, packagingCharge, platformFee, gstCharge, tip, discount, couponCode: code,
+      total: subtotal + deliveryCharge + packagingCharge + platformFee + gstCharge + tip - discount, payment: 'razorpay', fulfillment: 'delivery',
     };
   };
   const setStatus = (text, success = false) => {
@@ -98,6 +102,10 @@
           te ? 'వంటకాలు:' : 'Items:', ...summary,
           `${te ? 'వంటకాల మొత్తం' : 'Items subtotal'}: ${money(order.subtotal)}`,
           `${te ? 'డెలివరీ ఛార్జీ' : 'Delivery charge'}: ${money(order.deliveryCharge)}`,
+          `${te ? 'ప్యాకేజింగ్ ఛార్జీ' : 'Packaging fee'}: ${money(order.packagingCharge)}`,
+          `${te ? 'ప్లాట్‌ఫామ్ ఛార్జీ' : 'Platform fee'}: ${money(order.platformFee)}`,
+          `${te ? 'రెస్టారెంట్ GST (5%)' : 'Restaurant GST (5%)'}: ${money(order.gstCharge)}`,
+          `${te ? 'డెలివరీ టిప్' : 'Delivery tip'}: ${money(order.tip)}`,
           `${te ? 'కూపన్ తగ్గింపు' : 'Coupon discount'}: ${money(order.discount)}`,
           `${te ? 'చెల్లించాల్సిన మొత్తం' : 'Total to pay'}: ${money(order.total)}`,
           `${te ? 'చిరునామా' : 'Address'}: ${order.customer.address}`,

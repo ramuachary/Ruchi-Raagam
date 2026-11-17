@@ -999,3 +999,11 @@ body.help-open{overflow:hidden}
 .help-contact-actions a{display:flex;align-items:center;justify-content:center;min-height:40px;padding:8px;border:1px solid #e5cbb3;border-radius:10px;color:#a74425;font-size:11px;font-weight:700}
 .help-contact-actions a:hover{background:#fff3e8}
 @media(max-width:760px){.support-faqs summary,.support-track-details>summary{padding:14px 26px 14px 0;font-size:13px}.support-faqs details p,.support-track-details>p{font-size:12px}}
+.other-charges{margin:7px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.other-charges>summary{padding:10px 2px;color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;list-style:none}
+.other-charges>summary::-webkit-details-marker{display:none}
+.other-charges>summary:after{content:"+";float:right;font-size:16px;line-height:12px}
+.other-charges[open]>summary:after{content:"−"}
+.other-charges-content{padding:0 0 10px}
+.tip-field{display:grid;grid-template-columns:1fr minmax(110px,180px);align-items:center;gap:12px;padding:8px 0;color:var(--muted);font-size:12px}
+.tip-field select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit}

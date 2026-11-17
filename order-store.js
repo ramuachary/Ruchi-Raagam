@@ -69,7 +69,7 @@
         order_data: {
           customer: current.customer, items: current.items, total: current.total,
           subtotal: current.subtotal, distanceKm: current.distanceKm,
-          deliveryCharge: current.deliveryCharge, discount: current.discount,
+          deliveryCharge: current.deliveryCharge, packagingCharge: current.packagingCharge, platformFee: current.platformFee, gstCharge: current.gstCharge, tip: current.tip, discount: current.discount,
           couponCode: current.couponCode, payment: current.payment,
           fulfillment: current.fulfillment || 'delivery'
         },
@@ -184,18 +184,23 @@
     if (!items.length) return;
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const distanceKm = Number(customer.distanceKm || 0);
-    const deliveryCharge = Math.max(0, Math.ceil(distanceKm - 7 - 1e-9)) * 5;
+    const deliveryCharge = subtotal < 199 ? Math.ceil(Math.max(distanceKm - 1e-9, 0)) * 12 : 0;
     const coupons = { RAGAM10: { minimum: 150, amount: Math.round(subtotal * 0.10) }, WELCOME50: { minimum: 350, amount: 50 }, FEAST15: { minimum: 500, amount: Math.round(subtotal * 0.15) } };
     const coupon = coupons[customer.couponCode];
     const discount = coupon && subtotal >= coupon.minimum ? Math.min(subtotal, coupon.amount) : 0;
+    const tip = Number(customer.tip || 0);
+    const packagingCharge = subtotal ? 10 : 0;
+    const platformFee = subtotal ? 5 : 0;
+    const gstCharge = Math.round(Math.max(0, subtotal - discount) * 0.05);
+
     draft = {
       id: `RR-${Date.now().toString(36).toUpperCase()}`,
       clientReference: makeUuid(),
       createdAt: new Date().toISOString(),
       customer: { name: customer.name, phone: customer.phone, address: customer.address, landmark: customer.landmark, pincode: customer.pincode },
       items,
-      subtotal, distanceKm, deliveryCharge, discount, couponCode: customer.couponCode || '',
-      total: subtotal + deliveryCharge - discount,
+      subtotal, distanceKm, deliveryCharge, packagingCharge, platformFee, gstCharge, tip, discount, couponCode: customer.couponCode || '',
+      total: subtotal + deliveryCharge + packagingCharge + platformFee + gstCharge + tip - discount,
       payment: customer.payment || 'cod',
       fulfillment: 'delivery',
       status: 'new'
