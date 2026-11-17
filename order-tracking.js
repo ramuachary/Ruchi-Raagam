@@ -106,6 +106,14 @@
     const updated = order.updatedAt ? new Date(order.updatedAt).toLocaleString(document.documentElement.lang === 'te' ? 'te-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '';
     const trackingMarkup = `<div class="tracking-order-ref"><span>${t('Order reference', 'ఆర్డర్ రిఫరెన్స్')}</span><strong>${escapeHtml(order.id)}</strong></div><div class="tracking-current">${current[document.documentElement.lang === 'te' ? 1 : 0]}</div>${order.deliveryPerson && order.fulfillment !== 'pickup' ? `<p class="tracking-delivery-person"><span>${t('Your delivery partner', 'మీ డెలివరీ భాగస్వామి')}</span><strong>${escapeHtml(order.deliveryPerson)}</strong></p>` : ''}<ol class="tracking-timeline">${timeline}</ol><small class="tracking-updated">${updated ? `${t('Last updated', 'చివరిగా అప్‌డేట్ అయిన సమయం')}: ${escapeHtml(updated)}` : ''}</small>`;
     result.innerHTML = trackingMarkup;
+    if (order.status === 'delivered' && Array.isArray(order.items) && order.items.length) {
+      const invoiceButton = document.createElement('button');
+      invoiceButton.type = 'button';
+      invoiceButton.className = 'button invoice-download';
+      invoiceButton.textContent = t('Download invoice', 'ఇన్వాయిస్ డౌన్‌లోడ్');
+      invoiceButton.addEventListener('click', () => downloadInvoice(order));
+      result.append(invoiceButton);
+    }
     if (order.status !== 'delivered') {
       const eta = document.createElement('div');
       eta.className = 'tracking-eta';
@@ -147,6 +155,28 @@
     }
   };
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  const downloadInvoice = order => {
+    const money = amount => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
+    const rows = order.items.map(item => {
+      const quantity = Number(item.quantity || 0);
+      const price = Number(item.price || 0);
+      return `<tr><td>${escapeHtml(item.name || 'Menu item')}<small>${escapeHtml(item.portion || item.variant || '')}</small></td><td>${quantity}</td><td>${money(price)}</td><td>${money(price * quantity)}</td></tr>`;
+    }).join('');
+    const subtotal = Number(order.subtotal ?? order.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0));
+    const amountRow = (label, value) => Number(value || 0) ? `<tr><th colspan="3">${label}</th><td>${money(value)}</td></tr>` : '';
+    const date = new Date(order.createdAt || Date.now()).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    const address = [order.address, order.pincode].filter(Boolean).map(escapeHtml).join(', ');
+    const markup = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Invoice ${escapeHtml(order.id)}</title><style>body{font:15px Arial,sans-serif;color:#30231c;max-width:760px;margin:40px auto;padding:0 24px}header{display:flex;justify-content:space-between;border-bottom:2px solid #bb4e25;padding-bottom:18px}h1{font:700 30px Georgia,serif;margin:0 0 6px}.muted{color:#735f52;font-size:13px;line-height:1.6}.meta{margin:20px 0}table{width:100%;border-collapse:collapse;margin:22px 0}th,td{padding:11px 8px;border-bottom:1px solid #eadfd5;text-align:right}th:first-child,td:first-child{text-align:left}td small{display:block;color:#735f52;margin-top:4px}.totals{margin-left:auto;width:min(100%,360px)}.totals td,.totals th{border:0}.grand th,.grand td{border-top:2px solid #bb4e25;font-size:18px;font-weight:bold}.note{margin-top:26px;color:#735f52;font-size:12px}.print{margin:20px 0;padding:11px 16px;border:0;border-radius:20px;background:#bb4e25;color:white;font-weight:bold;cursor:pointer}@media print{body{margin:0 auto}.print{display:none}}</style><body><header><div><h1>Ruchi Raagam</h1><div class="muted">Andhra Cuisine · Hyderabad</div></div><div><strong>INVOICE</strong><div class="muted">Order ${escapeHtml(order.id)}</div><div class="muted">${escapeHtml(date)}</div></div></header><section class="meta"><strong>Bill to</strong><div>${escapeHtml(order.customerName || 'Customer')}</div><div class="muted">${address || '—'}</div>${order.deliveryPerson ? `<div class="muted">Delivery partner: ${escapeHtml(order.deliveryPerson)}</div>` : ''}</section><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table><table class="totals"><tbody><tr><th colspan="3">Items subtotal</th><td>${money(subtotal)}</td></tr>${amountRow('Delivery charge', order.deliveryCharge)}${amountRow('Packaging fee', order.packagingCharge)}${amountRow('Platform fee', order.platformFee)}${amountRow('Restaurant GST', order.gstCharge)}${amountRow('Delivery tip', order.tip)}${amountRow('Coupon discount', -Number(order.discount || 0))}<tr class="grand"><th colspan="3">Total paid / payable</th><td>${money(order.total)}</td></tr></tbody></table><div class="muted">Payment: ${escapeHtml(order.payment || '—')} · Status: ${escapeHtml(order.paymentStatus || 'unpaid')}</div><p class="note">Thank you for ordering from Ruchi Raagam.</p><button class="print" onclick="window.print()">Print / Save as PDF</button></body></html>`;
+    const blob = new Blob([markup], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Ruchi-Raagam-Invoice-${String(order.id).replace(/[^a-z0-9-]/gi, '')}.html`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
 
   const updateCustomerStatus = async (order, status) => {
     if (statusBusy || order.status !== 'new') return;
@@ -196,7 +226,7 @@
       if (error) throw error;
       const order = Array.isArray(data) ? data[0] : data;
       if (!order) return null;
-      return { id: order.id, status: order.status, fulfillment: order.fulfillment, createdAt: order.created_at, updatedAt: order.updated_at, deliveryPerson: order.delivery_person || '' };
+      return { id: order.id, status: order.status, fulfillment: order.fulfillment, createdAt: order.created_at, updatedAt: order.updated_at, deliveryPerson: order.delivery_person || '', customerName: order.customer_name || '', address: order.address || '', pincode: order.pincode || '', items: order.items || [], subtotal: order.subtotal, deliveryCharge: order.delivery_charge, packagingCharge: order.packaging_charge, platformFee: order.platform_fee, gstCharge: order.gst_charge, tip: order.tip, discount: order.discount, couponCode: order.coupon_code || '', total: order.total, payment: order.payment_method || '', paymentStatus: order.payment_status || '' };
     }
     let orders = [];
     try { orders = JSON.parse(localStorage.getItem('ruchi-raagam-orders-v1') || '[]'); } catch { /* ignore invalid local storage */ }
