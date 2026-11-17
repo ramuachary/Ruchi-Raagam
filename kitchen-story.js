@@ -10,7 +10,6 @@
     <div class="wrap kitchen-story-grid">
       <div class="kitchen-story-art">
         <img src="./assets/chef-cartoon.png" alt="Cartoon chef presenting a bowl of Andhra biryani in a warm kitchen" loading="lazy">
-        <span class="kitchen-story-stamp" aria-hidden="true">✦</span>
       </div>
       <div class="kitchen-story-copy">
         <div class="eyebrow" data-en="From our kitchen" data-te="మా వంటగది నుంచి">From our kitchen</div>
