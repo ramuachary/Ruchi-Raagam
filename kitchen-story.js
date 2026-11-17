@@ -9,7 +9,7 @@
   section.innerHTML = `
     <div class="wrap kitchen-story-grid">
       <div class="kitchen-story-art">
-        <img src="./assets/chef-cartoon.png" alt="Cartoon chef presenting a bowl of Andhra biryani in a warm kitchen" loading="lazy">
+        <img src="./chef-cartoon.png" alt="Cartoon chef presenting a bowl of Andhra biryani in a warm kitchen" loading="lazy">
       </div>
       <div class="kitchen-story-copy">
         <div class="eyebrow" data-en="From our kitchen" data-te="మా వంటగది నుంచి">From our kitchen</div>
@@ -23,6 +23,13 @@
       </div>
     </div>`;
   reviews.before(section);
+
+  const chefImage = section.querySelector('.kitchen-story-art img');
+  chefImage.addEventListener('error', () => {
+    if (chefImage.dataset.fallbackTried) return;
+    chefImage.dataset.fallbackTried = 'true';
+    chefImage.src = './assets/chef-cartoon.png';
+  });
 
   const updateCopy = () => {
     const telugu = document.documentElement.lang === 'te';
