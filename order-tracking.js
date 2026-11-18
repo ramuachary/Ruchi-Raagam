@@ -107,12 +107,34 @@
     const trackingMarkup = `<div class="tracking-order-ref"><span>${t('Order reference', 'ఆర్డర్ రిఫరెన్స్')}</span><strong>${escapeHtml(order.id)}</strong></div><div class="tracking-current">${current[document.documentElement.lang === 'te' ? 1 : 0]}</div>${order.deliveryPerson && order.fulfillment !== 'pickup' ? `<p class="tracking-delivery-person"><span>${t('Your delivery partner', 'మీ డెలివరీ భాగస్వామి')}</span><strong>${escapeHtml(order.deliveryPerson)}</strong></p>` : ''}<ol class="tracking-timeline">${timeline}</ol><small class="tracking-updated">${updated ? `${t('Last updated', 'చివరిగా అప్‌డేట్ అయిన సమయం')}: ${escapeHtml(updated)}` : ''}</small>`;
     result.innerHTML = trackingMarkup;
     if (order.status === 'delivered' && Array.isArray(order.items) && order.items.length) {
-      const invoiceButton = document.createElement('button');
-      invoiceButton.type = 'button';
-      invoiceButton.className = 'button invoice-download';
-      invoiceButton.textContent = t('Download invoice', 'ఇన్వాయిస్ డౌన్‌లోడ్');
-      invoiceButton.addEventListener('click', () => downloadInvoice(order));
-      result.append(invoiceButton);
+      const invoiceActions = document.createElement('div');
+      invoiceActions.className = 'invoice-actions';
+      const previewButton = document.createElement('button');
+      previewButton.type = 'button';
+      previewButton.className = 'button invoice-preview-toggle';
+      previewButton.textContent = t('Preview invoice', 'ఇన్వాయిస్ ప్రివ్యూ');
+      previewButton.setAttribute('aria-expanded', 'false');
+      const downloadButton = document.createElement('button');
+      downloadButton.type = 'button';
+      downloadButton.className = 'button invoice-download';
+      downloadButton.textContent = t('Download PDF', 'PDF డౌన్‌లోడ్');
+      downloadButton.addEventListener('click', () => downloadInvoicePdf(order));
+      const previewPanel = document.createElement('div');
+      previewPanel.className = 'invoice-preview-panel';
+      previewPanel.hidden = true;
+      const previewFrame = document.createElement('iframe');
+      previewFrame.className = 'invoice-preview-frame';
+      previewFrame.title = t('Invoice preview', 'ఇన్వాయిస్ ప్రివ్యూ');
+      previewPanel.append(previewFrame);
+      previewButton.addEventListener('click', () => {
+        const open = previewPanel.hidden;
+        previewPanel.hidden = !open;
+        previewButton.setAttribute('aria-expanded', String(open));
+        previewButton.textContent = t(open ? 'Hide preview' : 'Preview invoice', open ? 'ప్రివ్యూ మూసివేయి' : 'ఇన్వాయిస్ ప్రివ్యూ');
+        if (open && !previewFrame.srcdoc) previewFrame.srcdoc = buildInvoiceMarkup(order);
+      });
+      invoiceActions.append(previewButton, downloadButton);
+      result.append(invoiceActions, previewPanel);
     }
     if (order.status !== 'delivered') {
       const eta = document.createElement('div');
@@ -155,7 +177,7 @@
     }
   };
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-  const downloadInvoice = order => {
+  const buildInvoiceMarkup = order => {
     const money = amount => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
     const rows = order.items.map(item => {
       const quantity = Number(item.quantity || 0);
@@ -167,15 +189,173 @@
     const date = new Date(order.createdAt || Date.now()).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
     const address = [order.address, order.pincode].filter(Boolean).map(escapeHtml).join(', ');
     const markup = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Invoice ${escapeHtml(order.id)}</title><style>body{font:15px Arial,sans-serif;color:#30231c;max-width:760px;margin:40px auto;padding:0 24px}header{display:flex;justify-content:space-between;border-bottom:2px solid #bb4e25;padding-bottom:18px}h1{font:700 30px Georgia,serif;margin:0 0 6px}.muted{color:#735f52;font-size:13px;line-height:1.6}.meta{margin:20px 0}table{width:100%;border-collapse:collapse;margin:22px 0}th,td{padding:11px 8px;border-bottom:1px solid #eadfd5;text-align:right}th:first-child,td:first-child{text-align:left}td small{display:block;color:#735f52;margin-top:4px}.totals{margin-left:auto;width:min(100%,360px)}.totals td,.totals th{border:0}.grand th,.grand td{border-top:2px solid #bb4e25;font-size:18px;font-weight:bold}.note{margin-top:26px;color:#735f52;font-size:12px}.print{margin:20px 0;padding:11px 16px;border:0;border-radius:20px;background:#bb4e25;color:white;font-weight:bold;cursor:pointer}@media print{body{margin:0 auto}.print{display:none}}</style><body><header><div><h1>Ruchi Raagam</h1><div class="muted">Andhra Cuisine · Hyderabad</div></div><div><strong>INVOICE</strong><div class="muted">Order ${escapeHtml(order.id)}</div><div class="muted">${escapeHtml(date)}</div></div></header><section class="meta"><strong>Bill to</strong><div>${escapeHtml(order.customerName || 'Customer')}</div><div class="muted">${address || '—'}</div>${order.deliveryPerson ? `<div class="muted">Delivery partner: ${escapeHtml(order.deliveryPerson)}</div>` : ''}</section><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table><table class="totals"><tbody><tr><th colspan="3">Items subtotal</th><td>${money(subtotal)}</td></tr>${amountRow('Delivery charge', order.deliveryCharge)}${amountRow('Packaging fee', order.packagingCharge)}${amountRow('Platform fee', order.platformFee)}${amountRow('Restaurant GST', order.gstCharge)}${amountRow('Delivery tip', order.tip)}${amountRow('Coupon discount', -Number(order.discount || 0))}<tr class="grand"><th colspan="3">Total paid / payable</th><td>${money(order.total)}</td></tr></tbody></table><div class="muted">Payment: ${escapeHtml(order.payment || '—')} · Status: ${escapeHtml(order.paymentStatus || 'unpaid')}</div><p class="note">Thank you for ordering from Ruchi Raagam.</p><button class="print" onclick="window.print()">Print / Save as PDF</button></body></html>`;
-    const blob = new Blob([markup], { type: 'text/html;charset=utf-8' });
+    const restaurantAddress = 'SR Nagar · Near Venkateswara Temple · Hyderabad 500038';
+    const invoiceMarkup = markup
+      .replace('Andhra Cuisine · Hyderabad', 'Andhra Cuisine')
+      .replace('.meta{margin:20px 0}', '.meta{margin:20px 0}.address-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.address-grid>div{padding:14px;background:#f8f1e9;border-radius:10px;line-height:1.6}.address-grid strong{display:block;margin-bottom:8px;color:#b94925;font-size:12px;text-transform:uppercase;letter-spacing:1px}@media(max-width:540px){.address-grid{grid-template-columns:1fr}}')
+      .replace(/<section class="meta">.*?<\/section>/, `<section class="meta address-grid"><div><strong>Bill to</strong><div>${escapeHtml(order.customerName || 'Customer')}</div><div class="muted">${address || '—'}</div>${order.deliveryPerson ? `<div class="muted">Delivery partner: ${escapeHtml(order.deliveryPerson)}</div>` : ''}</div><div><strong>Restaurant</strong><div>Ruchi Raagam</div><div class="muted">${escapeHtml(restaurantAddress)}</div><div class="muted">+91 98765 43210</div><div class="muted">ruchiragam@gmail.com</div></div></section>`)
+      .replaceAll('Restaurant GST', 'GST (5%)')
+      .replaceAll('Delivery charge', 'Delivery')
+      .replace(/<tr><th colspan="3">(?:Packaging fee|Platform fee|Delivery tip)<\/th><td>.*?<\/td><\/tr>/g, '');
+    return invoiceMarkup;
+  };
+
+  const downloadInvoicePdf = order => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1275;
+    canvas.height = 1804;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.scale(1.5, 1.5);
+    const pageWidth = 850;
+    const pageHeight = 1202;
+    const margin = 54;
+    const right = pageWidth - margin;
+    const restaurantAddress = 'SR Nagar · Near Venkateswara Temple · Hyderabad 500038';
+    const address = [order.address, order.pincode].filter(Boolean).join(', ');
+    const date = new Date(order.createdAt || Date.now()).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    const money = amount => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
+    const color = { ink: '#30231c', muted: '#735f52', line: '#eadfd5', accent: '#bd4f28', pale: '#f8f1e9', white: '#fffdfa' };
+    context.fillStyle = color.white;
+    context.fillRect(0, 0, pageWidth, pageHeight);
+    context.fillStyle = color.accent;
+    context.fillRect(0, 0, pageWidth, 8);
+    context.fillStyle = color.ink;
+    context.font = 'bold 31px Georgia, serif';
+    context.fillText('Ruchi Raagam', margin, 67);
+    context.font = '12px Arial, sans-serif';
+    context.fillStyle = color.muted;
+    context.fillText('AUTHENTIC ANDHRA CUISINE', margin, 92);
+    context.font = 'bold 15px Arial, sans-serif';
+    context.fillStyle = color.accent;
+    context.textAlign = 'right';
+    context.fillText('INVOICE', right, 47);
+    context.font = '13px Arial, sans-serif';
+    context.fillStyle = color.ink;
+    context.fillText(`Order ${order.id}`, right, 70);
+    context.fillStyle = color.muted;
+    context.fillText(date, right, 92);
+    context.textAlign = 'left';
+    context.strokeStyle = color.line;
+    context.beginPath(); context.moveTo(margin, 115); context.lineTo(right, 115); context.stroke();
+
+    const boxY = 137, boxH = 144, gutter = 20, boxW = (pageWidth - margin * 2 - gutter) / 2;
+    context.fillStyle = color.pale;
+    context.fillRect(margin, boxY, boxW, boxH);
+    context.fillRect(margin + boxW + gutter, boxY, boxW, boxH);
+    context.font = 'bold 12px Arial, sans-serif'; context.fillStyle = color.accent;
+    context.fillText('BILL TO', margin + 16, boxY + 24);
+    context.fillText('RESTAURANT', margin + boxW + gutter + 16, boxY + 24);
+    context.font = 'bold 16px Arial, sans-serif'; context.fillStyle = color.ink;
+    context.fillText(String(order.customerName || 'Customer').slice(0, 40), margin + 16, boxY + 50);
+    context.fillText('Ruchi Raagam', margin + boxW + gutter + 16, boxY + 50);
+    context.font = '13px Arial, sans-serif'; context.fillStyle = color.muted;
+    const drawWrapped = (text, x, y, maxWidth, lineHeight = 18) => {
+      let line = '';
+      for (const word of String(text || '—').split(/\s+/)) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (context.measureText(candidate).width > maxWidth && line) { context.fillText(line, x, y); y += lineHeight; line = word; }
+        else line = candidate;
+      }
+      if (line) context.fillText(line, x, y);
+      return y + lineHeight;
+    };
+    let leftY = drawWrapped(address, margin + 16, boxY + 76, boxW - 32);
+    if (order.deliveryPerson) drawWrapped(`Delivery partner: ${order.deliveryPerson}`, margin + 16, leftY + 1, boxW - 32);
+    const rx = margin + boxW + gutter + 16;
+    let rightY = drawWrapped(restaurantAddress, rx, boxY + 76, boxW - 32);
+    rightY = drawWrapped('+91 98765 43210', rx, rightY + 1, boxW - 32);
+    drawWrapped('ruchiragam@gmail.com', rx, rightY + 1, boxW - 32);
+
+    let y = boxY + boxH + 28;
+    const rowHeight = 27;
+    context.fillStyle = color.pale;
+    context.fillRect(margin, y, pageWidth - margin * 2, 34);
+    context.font = 'bold 11px Arial, sans-serif'; context.fillStyle = color.muted;
+    context.fillText('ITEM', margin + 12, y + 22);
+    context.textAlign = 'center'; context.fillText('QTY', 600, y + 22); context.fillText('PRICE', 690, y + 22);
+    context.textAlign = 'right'; context.fillText('AMOUNT', right - 12, y + 22);
+    y += 34;
+    context.textAlign = 'left';
+    for (const item of order.items) {
+      const quantity = Number(item.quantity || 0);
+      const price = Number(item.price || 0);
+      context.font = 'bold 13px Arial, sans-serif'; context.fillStyle = color.ink;
+      context.fillText(String(item.name || 'Menu item').slice(0, 48), margin + 12, y + 17);
+      context.font = '11px Arial, sans-serif'; context.fillStyle = color.muted;
+      context.fillText(String(item.portion || item.variant || '').slice(0, 36), margin + 12, y + 33);
+      context.font = '13px Arial, sans-serif'; context.fillStyle = color.ink; context.textAlign = 'center';
+      context.fillText(String(quantity), 600, y + 23); context.fillText(money(price), 690, y + 23);
+      context.textAlign = 'right'; context.font = 'bold 13px Arial, sans-serif';
+      context.fillText(money(price * quantity), right - 12, y + 23);
+      context.strokeStyle = color.line; context.beginPath(); context.moveTo(margin, y + rowHeight); context.lineTo(right, y + rowHeight); context.stroke();
+      y += rowHeight;
+    }
+
+    y = Math.max(y + 24, 420);
+    const subtotal = Number(order.subtotal ?? order.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0));
+    const totals = [['Items subtotal', subtotal], ['Delivery', Number(order.deliveryCharge || 0)], ['GST (5%)', Number(order.gstCharge || 0)]];
+    if (Number(order.discount || 0)) totals.push(['Coupon discount', -Number(order.discount)]);
+    context.textAlign = 'left';
+    context.font = '13px Arial, sans-serif'; context.fillStyle = color.muted;
+    for (const [label, amount] of totals) {
+      context.fillText(label, margin + 12, y);
+      context.textAlign = 'right'; context.fillStyle = color.ink;
+      context.fillText(`${Number(amount) < 0 ? '−' : ''}${money(Math.abs(Number(amount)))}`, right - 12, y);
+      context.textAlign = 'left'; context.fillStyle = color.muted;
+      y += 29;
+    }
+    context.strokeStyle = color.line; context.beginPath(); context.moveTo(margin, y - 8); context.lineTo(right, y - 8); context.stroke();
+    context.font = 'bold 17px Arial, sans-serif'; context.fillStyle = color.ink;
+    context.fillText('Total paid / payable', margin + 12, y + 20);
+    context.font = 'bold 24px Georgia, serif'; context.fillStyle = color.accent; context.textAlign = 'right';
+    context.fillText(money(order.total), right - 12, y + 22);
+    context.textAlign = 'left'; context.font = '12px Arial, sans-serif'; context.fillStyle = color.muted;
+    const paymentStatus = String(order.paymentStatus || 'unpaid');
+    const paymentLabel = paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'unpaid' ? 'Unpaid' : paymentStatus;
+    context.fillText(`Payment: ${order.payment || '—'} · Status: ${paymentLabel}`, margin + 12, y + 52);
+    context.strokeStyle = color.line; context.beginPath(); context.moveTo(margin, pageHeight - 68); context.lineTo(right, pageHeight - 68); context.stroke();
+    context.textAlign = 'center'; context.font = 'bold 15px Georgia, serif'; context.fillStyle = color.ink;
+    context.fillText('Thank you for ordering from Ruchi Raagam.', pageWidth / 2, pageHeight - 40);
+    context.textAlign = 'left';
+
+    const jpeg = atob(canvas.toDataURL('image/jpeg', 0.94).split(',')[1]);
+    const imageBytes = Uint8Array.from(jpeg, char => char.charCodeAt(0));
+    const encoder = new TextEncoder();
+    const encode = text => encoder.encode(text);
+    const join = chunks => {
+      const output = new Uint8Array(chunks.reduce((size, chunk) => size + chunk.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.length; }
+      return output;
+    };
+    const pageContent = encode('q 595.28 0 0 841.89 0 0 cm /Im0 Do Q\n');
+    const objects = [
+      encode('<< /Type /Catalog /Pages 2 0 R >>'),
+      encode('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'),
+      encode('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>'),
+      join([encode(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBytes.length} >>\nstream\n`), imageBytes, encode('\nendstream')]),
+      join([encode(`<< /Length ${pageContent.length} >>\nstream\n`), pageContent, encode('endstream')])
+    ];
+    const chunks = [encode('%PDF-1.4\n%RR\n')];
+    const offsets = [0];
+    let byteLength = chunks[0].length;
+    objects.forEach((object, index) => {
+      offsets.push(byteLength);
+      const block = join([encode(`${index + 1} 0 obj\n`), object, encode('\nendobj\n')]);
+      chunks.push(block); byteLength += block.length;
+    });
+    const xrefOffset = byteLength;
+    let xref = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    for (let index = 1; index < offsets.length; index++) xref += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`;
+    chunks.push(encode(`${xref}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`));
+    const blob = new Blob([join(chunks)], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Ruchi-Raagam-Invoice-${String(order.id).replace(/[^a-z0-9-]/gi, '')}.html`;
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    link.download = `Ruchi-Raagam-Invoice-${String(order.id).replace(/[^a-z0-9-]/gi, '')}.pdf`;
+    document.body.append(link); link.click(); link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1500);
   };
 
   const updateCustomerStatus = async (order, status) => {

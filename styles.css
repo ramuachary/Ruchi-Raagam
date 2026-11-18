@@ -532,7 +532,7 @@ header .brand:hover .brand-logo{filter:drop-shadow(0 7px 12px rgba(75,44,24,.2))
 @media(max-width:380px){header .brand-logo{width:clamp(136px,40vw,152px)}}
 .tracking-current{margin:16px 0 18px;color:#b64b25;font:600 22px/1.25 var(--serif)}
 .tracking-delivery-person{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px;padding:11px 14px;border:1px solid #cbded0;border-radius:12px;background:#f1f8f2;color:#44644d;font-size:13px}.tracking-delivery-person strong{color:#244a35;font-weight:700}
-.invoice-download{margin-top:18px}
+.invoice-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.invoice-actions .button{margin-top:0}.invoice-preview-panel{margin-top:14px;overflow:hidden;border:1px solid #ead8c7;border-radius:14px;background:#fff;box-shadow:0 8px 24px #56351f12}.invoice-preview-frame{display:block;width:100%;height:min(78vh,900px);min-height:560px;border:0;background:#fff}
 .tracking-current.is-cancelled{color:#9b3027}
 .tracking-timeline{display:flex;justify-content:space-between;gap:8px;margin:0;padding:0;list-style:none}
 .tracking-step{display:grid;justify-items:center;gap:8px;flex:1;position:relative;color:#9a8d80;text-align:center;font-size:11px;line-height:1.35}
