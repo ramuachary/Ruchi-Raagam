@@ -60,7 +60,7 @@
   const dashboardView = document.getElementById('dashboardView');
   let filter = 'all';
   let period = 'today';
-  let currentPage = 'orders';
+  let currentPage = 'dashboard';
   let toastTimer;
   const toast = message => { toastEl.classList.remove('order-received-toast'); toastEl.textContent = message; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600); };
   const orderReceivedToast = order => { toastEl.classList.add('order-received-toast'); toastEl.innerHTML = `<span class="order-toast-wheel" aria-hidden="true">✓</span><span class="order-toast-copy"><strong>Order received</strong><small>${escapeHtml(order.customer?.name || 'Customer')} · ${money(order.total)}</small></span>`; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3000); };
@@ -73,10 +73,10 @@
     main.className = 'admin-main';
     [...shell.children].forEach(child => main.append(child));
     const pageTitle = main.querySelector('.topbar .brand');
-    if (pageTitle) { pageTitle.textContent = '☰  Order List'; pageTitle.classList.add('dashboard-page-title'); }
+    if (pageTitle) { pageTitle.innerHTML = '<span class="admin-top-brand">Ruchi <b>Raagam</b></span><span class="admin-top-divider"></span><span class="admin-top-title">▥ &nbsp; Admin Dashboard</span>'; pageTitle.classList.add('dashboard-page-title'); }
     const sidebar = document.createElement('aside');
     sidebar.className = 'admin-sidebar';
-    sidebar.innerHTML = `<a class="admin-side-brand" href="index.html"><span class="admin-brand-mark">✦</span><span>Ruchi <b>Raagam</b><small>RESTAURANT ADMIN</small></span></a><nav class="admin-nav" aria-label="Dashboard navigation"><button type="button" data-page="dashboard"><span>⌂</span>Dashboard</button><button type="button" data-page="orders" class="active"><span>▤</span>Orders</button><button type="button" data-page="menus"><span>♨</span>Menus</button><button type="button" data-page="customers"><span>♙</span>Customers</button><button type="button" data-page="reviews"><span>★</span>Reviews</button><button type="button" data-page="analytics"><span>▥</span>Analytics</button></nav><div class="sidebar-note quick-actions"><span>QUICK ACTIONS</span><strong>Jump right in</strong><small>Open a view directly.</small><button type="button" data-page="orders">▤ &nbsp; View orders <b>↗</b></button><button type="button" data-page="analytics">▥ &nbsp; Sales insights <b>↗</b></button></div><div class="sidebar-footer">Ruchi Raagam Admin<br>Hyderabad · SR Nagar</div>`;
+    sidebar.innerHTML = `<a class="admin-side-brand" href="index.html"><span class="admin-brand-mark">♨</span><span>Ruchi <b>Raagam</b><small>ANDHRA CUISINE RESTAURANT</small></span></a><nav class="admin-nav" aria-label="Dashboard navigation"><button type="button" data-page="dashboard" class="active"><span>⌂</span>Dashboard</button><button type="button" data-page="orders"><span>🛒</span>Orders</button><button type="button" data-page="menus"><span>♨</span>Menu</button><button type="button" data-page="customers"><span>♟</span>Customers</button><button type="button" data-page="reviews"><span>★</span>Reviews</button><button type="button" data-page="analytics"><span>▥</span>Analytics</button></nav><div class="sidebar-note quick-actions"><span>QUICK ACTIONS</span><strong>Jump right in</strong><small>Open a view directly.</small><button type="button" data-page="menus">♨ &nbsp; Menu performance <b>↗</b></button><button type="button" data-page="orders">▤ &nbsp; View orders <b>↗</b></button></div><div class="sidebar-footer"><span class="side-temple">✦</span><br>GOOD FOOD · GOOD MOOD</div>`;
     const module = document.createElement('section');
     module.id = 'adminModuleView';
     module.className = 'admin-module-view';
@@ -91,12 +91,13 @@
   const moduleView = adminLayout.module;
   const setPage = page => {
     currentPage = page;
+    adminLayout.main.classList.toggle('is-dashboard-home', page === 'dashboard');
     adminLayout.sidebar.querySelectorAll('[data-page]').forEach(button => button.classList.toggle('active', button.dataset.page === page));
     const heading = adminLayout.main.querySelector('.heading h1');
     heading.textContent = ({dashboard:'Dashboard overview',orders:'Order list',menus:'Menu performance',customers:'Customers',reviews:'Customer reviews',analytics:'Analytics'})[page];
     const showOrders = page === 'orders';
     const toolbar = adminLayout.main.querySelector('.toolbar');
-    toolbar.hidden = page === 'reviews';
+    toolbar.hidden = page === 'reviews' || page === 'dashboard';
     toolbar.classList.toggle('module-toolbar', !showOrders);
     toolbar.querySelector('.tabs').hidden = !showOrders;
     toolbar.querySelector('label').hidden = !showOrders;
@@ -106,6 +107,10 @@
     render();
   };
   adminLayout.sidebar.addEventListener('click', event => {
+    const button = event.target.closest('[data-page]');
+    if (button) setPage(button.dataset.page);
+  });
+  moduleView.addEventListener('click', event => {
     const button = event.target.closest('[data-page]');
     if (button) setPage(button.dataset.page);
   });
@@ -136,11 +141,10 @@
     };
     const orders = allOrders.filter(inPeriod);
     const active = orders.filter(order => !terminal.has(order.status));
-    const todayKey = now.toDateString();
-    document.getElementById('newCount').textContent = orders.filter(order => order.status === 'new').length;
-    document.getElementById('activeCount').textContent = active.length;
-    document.getElementById('pickupCount').textContent = active.filter(order => order.fulfillment === 'pickup').length;
-    document.getElementById('deliveredCount').textContent = orders.filter(order => ['delivered', 'picked_up'].includes(order.status) && new Date(order.updatedAt || order.createdAt).toDateString() === todayKey).length;
+    document.getElementById('newCount').textContent = orders.length;
+    document.getElementById('activeCount').textContent = money(orders.filter(order => order.status !== 'cancelled').reduce((sum, order) => sum + Number(order.total || 0), 0));
+    document.getElementById('pickupCount').textContent = active.length;
+    document.getElementById('deliveredCount').textContent = new Set(orders.map(order => order.customer?.phone || order.customer?.name || 'Customer')).size;
     document.getElementById('activeBadge').textContent = orders.length;
     const query = document.getElementById('search').value.trim().toLowerCase();
     const shown = orders.filter(order => {
@@ -197,6 +201,32 @@
     } else if (currentPage === 'menus') {
       const rows = topItems.map(item=>`<tr><td><strong>${escapeHtml(item.name)}</strong></td><td>${item.quantity}</td><td>${money(item.sales)}</td></tr>`).join('');
       moduleView.innerHTML = `<div class="module-heading"><span class="eyebrow">MENU PERFORMANCE</span><h2>Popular dishes</h2><p>Items are ranked by quantity sold in the selected date range.</p></div><div class="module-table-wrap"><table class="module-table"><thead><tr><th>Menu item</th><th>Quantity sold</th><th>Item sales</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="module-empty">Popular items will appear after orders arrive.</td></tr>'}</tbody></table></div>`;
+    } else if (currentPage === 'dashboard') {
+      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+      const weekOrders = load().filter(order => order.status !== 'cancelled' && new Date(order.createdAt) >= weekStart);
+      const dailySales = Array.from({length:7}, (_, index) => {
+        const date = new Date(weekStart); date.setDate(weekStart.getDate() + index);
+        const key = date.toDateString();
+        return { date, sales: weekOrders.filter(order => new Date(order.createdAt).toDateString() === key).reduce((sum, order) => sum + Number(order.total || 0), 0) };
+      });
+      const maxSales = Math.max(...dailySales.map(day => day.sales), 1);
+      const chartPoints = dailySales.map((day, index) => ({...day, x: 34 + index * 84, y: 166 - Math.round(day.sales / maxSales * 122)}));
+      const linePath = chartPoints.map((point, index) => `${index ? 'L' : 'M'}${point.x},${point.y}`).join(' ');
+      const areaPath = `${linePath} L${chartPoints.at(-1).x},178 L${chartPoints[0].x},178 Z`;
+      const chart = `<svg class="sales-chart" viewBox="0 0 570 210" role="img" aria-label="గత ఏడు రోజుల అమ్మకాల చార్ట్"><defs><linearGradient id="salesFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#278446" stop-opacity=".24"/><stop offset="1" stop-color="#278446" stop-opacity="0"/></linearGradient></defs>${[35,75,115,155].map((y,i)=>`<line x1="34" y1="${y}" x2="538" y2="${y}" class="chart-grid"/><text x="0" y="${y+4}" class="chart-axis">₹${new Intl.NumberFormat('en-IN',{notation:'compact',maximumFractionDigits:0}).format(Math.round(maxSales*(1-i/3)))}</text>`).join('')}<path d="${areaPath}" fill="url(#salesFill)"/><path d="${linePath}" class="chart-line"/>${chartPoints.map(point=>`<circle cx="${point.x}" cy="${point.y}" r="4.5" class="chart-dot"><title>${point.date.toLocaleDateString('en-IN',{weekday:'short'})}: ${money(point.sales)}</title></circle><text x="${point.x}" y="199" text-anchor="middle" class="chart-label">${point.date.toLocaleDateString('en-IN',{weekday:'short'})}</text>`).join('')}</svg>`;
+      const recent = load().slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+      const recentRows = recent.map(order => {
+        const quantity = (order.items || []).reduce((sum,item)=>sum+Number(item.quantity||0),0);
+        return `<tr><td><strong>#${escapeHtml(String(order.id||'').slice(-5).toUpperCase())}</strong></td><td>${escapeHtml(order.customer?.name||'Customer')}</td><td>${quantity} ${quantity===1?'item':'items'}</td><td>${money(order.total)}</td><td><span class="overview-status status-${escapeHtml(order.status||'new')}">${escapeHtml(labels[order.status]||'New')}</span></td><td>${new Date(order.createdAt).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}</td></tr>`;
+      }).join('');
+      const totalItems = topItems.reduce((sum,item)=>sum+item.quantity,0) || 1;
+      const dishCards = topItems.slice(0,4).map((item,index)=>`<article class="dish-mini dish-tone-${index+1}"><span class="dish-mini-mark">${['✦','♨','✿','◆'][index]}</span><strong>${escapeHtml(item.name)}</strong><b>${money(item.sales)}</b><small>${Math.round(item.quantity/totalItems*100)}% · ${item.quantity} sold</small></article>`).join('');
+      const delivered = orders.filter(order=>['delivered','picked_up'].includes(order.status)).length;
+      const pending = orders.filter(order=>!terminal.has(order.status)).length;
+      const cancelled = orders.filter(order=>order.status==='cancelled').length;
+      const totalCount = Math.max(orders.length,1);
+      const p1 = Math.round(pending/totalCount*100), p2 = Math.round(delivered/totalCount*100), p3 = Math.max(0,100-p1-p2);
+      moduleView.innerHTML = `<div class="overview-grid"><section class="overview-panel sales-panel"><div class="panel-title"><h3>▥ &nbsp; Sales overview</h3><span class="panel-range">Last 7 days</span></div>${chart}</section><section class="overview-panel recent-panel"><div class="panel-title"><h3>🛒 &nbsp; Recent orders</h3><button class="text-action" data-page="orders">View all →</button></div><div class="recent-table-wrap"><table class="recent-table"><thead><tr><th>#Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody>${recentRows||'<tr><td colspan="6" class="recent-empty">New orders appear here when customers place them.</td></tr>'}</tbody></table></div></section><section class="overview-panel quick-panel"><div class="quick-panel-title"><h3>⚡ &nbsp; Quick actions</h3></div><div class="quick-action-grid"><button data-page="menus"><span>♨</span>Menu performance</button><button data-page="orders"><span>🛒</span>View orders</button><button data-page="customers"><span>♟</span>Customer list</button><button data-page="analytics"><span>▥</span>Sales insights</button></div></section><section class="overview-panel dishes-panel"><div class="panel-title"><h3>★ &nbsp; Top selling dishes</h3><button class="text-action" data-page="menus">View all →</button></div><div class="dish-mini-grid">${dishCards||'<p class="recent-empty">Best sellers will appear after orders arrive.</p>'}</div></section><section class="overview-panel restaurant-stats-panel"><div class="panel-title"><h3>♟ &nbsp; Restaurant stats</h3></div><div class="stats-donut-row"><div class="stats-donut" style="${orders.length?`--pending:${p1}%;--delivered:${p2}%;--cancelled:${p3}%`:'background:conic-gradient(#e5ebe5 0 100%)'}"><strong>${orders.length}</strong><small>orders</small></div><ul><li><i class="legend-pending"></i>In progress <b>${orders.length?p1:0}%</b></li><li><i class="legend-delivered"></i>Delivered <b>${orders.length?p2:0}%</b></li><li><i class="legend-cancelled"></i>Cancelled <b>${orders.length?p3:0}%</b></li></ul></div></section></div>`;
     } else {
       const isAnalytics = currentPage === 'analytics';
       const bars = topItems.slice(0,5).map((item,index)=>`<div class="top-item"><div><span>${escapeHtml(item.name)}</span><strong>${item.quantity} sold</strong></div><div class="bar-track"><i style="width:${Math.max(8, Math.round(item.quantity/(topItems[0]?.quantity || 1)*100))}%"></i></div></div>`).join('');
@@ -296,5 +326,5 @@
   window.addEventListener('rr:review-added', event => { render(); toast(`New review from ${event.detail?.name || 'guest'}`); });
   setInterval(acceptExpiredOrders, 1000);
   acceptExpiredOrders();
-  render();
+  setPage('dashboard');
 })();
