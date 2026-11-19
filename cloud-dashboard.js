@@ -7,7 +7,7 @@
   const shell = document.querySelector('.shell');
   if (!shell) return;
   const style = document.createElement('style');
-  style.textContent = `.rr-cloud-gate[hidden]{display:none!important}.rr-cloud-gate{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:20px;background:rgba(31,24,19,.62);font:14px Arial,sans-serif}.rr-gate-card{width:min(100%,440px);padding:30px;border:1px solid #e8ded4;border-radius:16px;background:#fff;box-shadow:0 24px 70px #0003}.rr-gate-card h2{margin:10px 0;font:700 30px/1.1 Georgia,serif;color:#2b211b}.rr-gate-card p{color:#76685d;line-height:1.55}.rr-gate-card label{display:block;margin:18px 0 6px;font-weight:700}.rr-gate-card input{width:100%;padding:12px;border:1px solid #e8ded4;border-radius:7px}.rr-gate-card button{margin-top:14px}.rr-gate-card #rrAuthStatus{min-height:20px;margin-bottom:0}`;
+  style.textContent = `.rr-cloud-gate[hidden]{display:none!important}.rr-cloud-gate{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:20px;background:rgba(31,24,19,.62);font:14px Arial,sans-serif}.rr-gate-card{width:min(100%,440px);padding:30px;border:1px solid #e8ded4;border-radius:16px;background:#fff;box-shadow:0 24px 70px #0003}.rr-gate-card h2{margin:10px 0;font:700 30px/1.1 Georgia,serif;color:#2b211b}.rr-gate-card p{color:#76685d;line-height:1.55}.rr-gate-card label{display:block;margin:18px 0 6px;font-weight:700}.rr-gate-card input{width:100%;padding:12px;border:1px solid #e8ded4;border-radius:7px}.rr-gate-card button{margin-top:14px}.rr-gate-card .rr-reset-button{margin-left:10px;background:transparent;color:#a84427;border:0;text-decoration:underline;cursor:pointer}.rr-gate-card #rrAuthStatus{min-height:20px;margin-bottom:0}`;
   document.head.append(style);
 
   const addSignOut = () => {
@@ -22,22 +22,59 @@
   const makeGate = () => {
     const gate = document.createElement('section');
     gate.className = 'rr-cloud-gate';
-    gate.innerHTML = `<div class="rr-gate-card"><div class="eyebrow">Private restaurant dashboard</div><h2>Sign in to view orders</h2><p>We’ll email a secure sign-in link to the restaurant account.</p><label for="rrAdminEmail">Admin email</label><input id="rrAdminEmail" type="email" value="${ADMIN}" readonly><button id="rrSendLogin" class="btn btn-primary" type="button">Send sign-in link</button><p id="rrAuthStatus" role="status" aria-live="polite"></p></div>`;
+    gate.innerHTML = `<form class="rr-gate-card" id="rrAdminLogin"><div class="eyebrow">Private restaurant dashboard</div><h2>Sign in to view orders</h2><p>Use your restaurant admin email and password.</p><label for="rrAdminEmail">Admin email</label><input id="rrAdminEmail" type="email" value="${ADMIN}" autocomplete="username" required><label for="rrAdminPassword">Password</label><input id="rrAdminPassword" type="password" autocomplete="current-password" required><button id="rrSendLogin" class="btn btn-primary" type="submit">Sign in</button><button id="rrResetPassword" class="rr-reset-button" type="button">Forgot password?</button><p id="rrAuthStatus" role="status" aria-live="polite"></p></form>`;
     shell.prepend(gate);
     const status = gate.querySelector('#rrAuthStatus');
-    gate.querySelector('#rrSendLogin').addEventListener('click', async event => {
-      event.currentTarget.disabled = true;
-      status.textContent = 'Sending secure sign-in link…';
+    const loginForm = gate.querySelector('#rrAdminLogin');
+    let recoveryMode = false;
+    loginForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const submitButton = gate.querySelector('#rrSendLogin');
+      const email = gate.querySelector('#rrAdminEmail').value.trim();
+      const password = gate.querySelector('#rrAdminPassword').value;
+      submitButton.disabled = true;
+      status.textContent = recoveryMode ? 'Updating password…' : 'Signing in…';
       try {
         const client = await window.rrSupabaseReady;
-        const { error } = await client.auth.signInWithOtp({ email: ADMIN, options: { shouldCreateUser: false, emailRedirectTo: location.href.split('#')[0] } });
+        const { error } = recoveryMode
+          ? await client.auth.updateUser({ password })
+          : await client.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        status.textContent = `Check ${ADMIN} for the sign-in link.`;
+        if (recoveryMode) {
+          recoveryMode = false;
+          status.textContent = 'Password updated. Opening dashboard…';
+          const { data } = await client.auth.getUser();
+          await startDashboard(data.user);
+        } else status.textContent = 'Signed in. Opening dashboard…';
       } catch (error) {
-        status.textContent = error.message || 'Could not send the sign-in link.';
-        event.currentTarget.disabled = false;
+        status.textContent = error.message || 'Could not sign in.';
+        submitButton.disabled = false;
       }
     });
+    gate.querySelector('#rrResetPassword').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      status.textContent = `Sending a password reset link to ${ADMIN}…`;
+      try {
+        const client = await window.rrSupabaseReady;
+        const { error } = await client.auth.resetPasswordForEmail(ADMIN, { redirectTo: location.href.split('#')[0] });
+        if (error) throw error;
+        status.textContent = `Check ${ADMIN} for the password reset link.`;
+      } catch (error) {
+        status.textContent = error.message || 'Could not send the reset link.';
+        button.disabled = false;
+      }
+    });
+    gate.showPasswordRecovery = () => {
+      recoveryMode = true;
+      gate.hidden = false;
+      gate.querySelector('label[for="rrAdminPassword"]').textContent = 'New password';
+      gate.querySelector('#rrAdminPassword').autocomplete = 'new-password';
+      gate.querySelector('#rrAdminPassword').minLength = 8;
+      gate.querySelector('#rrResetPassword').hidden = true;
+      gate.querySelector('#rrSendLogin').textContent = 'Save new password';
+      status.textContent = 'Choose a new password with at least 8 characters.';
+    };
     return gate;
   };
 
@@ -156,6 +193,9 @@
     const { data: { user }, error } = await client.auth.getUser();
     if (error && error.name !== 'AuthSessionMissingError') status.textContent = error.message;
     await startDashboard(user);
-    client.auth.onAuthStateChange((_event, session) => { if (session?.user) startDashboard(session.user); });
+    client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') gate.showPasswordRecovery();
+      else if (session?.user) startDashboard(session.user);
+    });
   });
 })();
