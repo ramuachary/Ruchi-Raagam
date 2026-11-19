@@ -2,6 +2,9 @@
   const KEY = 'ruchi-raagam-orders-v1';
   const REVIEWS_KEY = 'ruchi-raagam-reviews-v1';
   const ADMIN = 'ramuachary8763@gmail.com';
+  const recoveryParams = new URLSearchParams(location.search);
+  const recoveryHash = new URLSearchParams(location.hash.slice(1));
+  let passwordRecoveryPending = recoveryParams.get('type') === 'recovery' || recoveryParams.has('code') || recoveryHash.get('type') === 'recovery';
   const config = window.RUCHI_RAAGAM_SUPABASE;
   const configured = config?.url && !config.url.includes('YOUR_PROJECT_REF') && config.publishableKey && !config.publishableKey.includes('YOUR_SUPABASE_');
   const shell = document.querySelector('.shell');
@@ -26,7 +29,7 @@
     shell.prepend(gate);
     const status = gate.querySelector('#rrAuthStatus');
     const loginForm = gate.querySelector('#rrAdminLogin');
-    let recoveryMode = false;
+    let recoveryMode = passwordRecoveryPending;
     loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       const submitButton = gate.querySelector('#rrSendLogin');
@@ -42,6 +45,7 @@
         if (error) throw error;
         if (recoveryMode) {
           recoveryMode = false;
+          passwordRecoveryPending = false;
           status.textContent = 'Password updated. Opening dashboard…';
           const { data } = await client.auth.getUser();
           await startDashboard(data.user);
@@ -67,6 +71,7 @@
     });
     gate.showPasswordRecovery = () => {
       recoveryMode = true;
+      passwordRecoveryPending = true;
       gate.hidden = false;
       gate.querySelector('label[for="rrAdminPassword"]').textContent = 'New password';
       gate.querySelector('#rrAdminPassword').autocomplete = 'new-password';
@@ -75,6 +80,7 @@
       gate.querySelector('#rrSendLogin').textContent = 'Save new password';
       status.textContent = 'Choose a new password with at least 8 characters.';
     };
+    if (recoveryMode) gate.showPasswordRecovery();
     return gate;
   };
 
@@ -144,6 +150,10 @@
       lastOrders = latest;
     };
     const startDashboard = async user => {
+      if (passwordRecoveryPending) {
+        gate.showPasswordRecovery();
+        return;
+      }
       if (!user) return;
       if (user?.email?.toLowerCase() !== ADMIN) {
         await client.auth.signOut();
