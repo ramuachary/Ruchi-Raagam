@@ -74,6 +74,24 @@
     [...shell.children].forEach(child => main.append(child));
     const pageTitle = main.querySelector('.topbar .brand');
     if (pageTitle) { pageTitle.innerHTML = '<span class="admin-top-brand">Ruchi <b>Raagam</b></span><span class="admin-top-divider"></span><span class="admin-top-title">▥ &nbsp; Admin Dashboard</span>'; pageTitle.classList.add('dashboard-page-title'); }
+    const actions = main.querySelector('.top-actions');
+    const themeToggle = document.createElement('button');
+    themeToggle.type = 'button';
+    themeToggle.className = 'btn theme-toggle';
+    themeToggle.id = 'dashboardThemeToggle';
+    const applyTheme = theme => {
+      const dark = theme === 'dark';
+      document.body.dataset.adminTheme = dark ? 'dark' : 'light';
+      themeToggle.textContent = dark ? '☀ Light mode' : '☾ Dark mode';
+      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.setAttribute('aria-pressed', String(dark));
+      try { localStorage.setItem('ruchi-raagam-dashboard-theme', dark ? 'dark' : 'light'); } catch { /* Theme preference is optional. */ }
+    };
+    let savedTheme = 'light';
+    try { savedTheme = localStorage.getItem('ruchi-raagam-dashboard-theme') === 'dark' ? 'dark' : 'light'; } catch { /* Use light mode if storage is unavailable. */ }
+    applyTheme(savedTheme);
+    themeToggle.addEventListener('click', () => applyTheme(document.body.dataset.adminTheme === 'dark' ? 'light' : 'dark'));
+    if (actions) actions.insertBefore(themeToggle, actions.querySelector('#enableNotifications'));
     const sidebar = document.createElement('aside');
     sidebar.className = 'admin-sidebar';
     sidebar.innerHTML = `<a class="admin-side-brand" href="index.html"><span class="admin-brand-mark">♨</span><span>Ruchi <b>Raagam</b><small>ANDHRA CUISINE RESTAURANT</small></span></a><nav class="admin-nav" aria-label="Dashboard navigation"><button type="button" data-page="dashboard" class="active"><span>⌂</span>Dashboard</button><button type="button" data-page="orders"><span>🛒</span>Orders</button><button type="button" data-page="menus"><span>♨</span>Menu</button><button type="button" data-page="customers"><span>♟</span>Customers</button><button type="button" data-page="reviews"><span>★</span>Reviews</button><button type="button" data-page="analytics"><span>▥</span>Analytics</button></nav><div class="sidebar-note quick-actions"><span>QUICK ACTIONS</span><strong>Jump right in</strong><small>Open a view directly.</small><button type="button" data-page="orders">▤ &nbsp; View orders <b>↗</b></button><button type="button" data-page="menus">♨ &nbsp; Menu insights <b>↗</b></button><button type="button" data-page="customers">♟ &nbsp; Customers <b>↗</b></button><button type="button" data-page="reviews">★ &nbsp; Reviews <b>↗</b></button></div><div class="sidebar-footer"><span class="side-temple">✦</span><br>GOOD FOOD · GOOD MOOD</div>`;
@@ -89,6 +107,28 @@
   };
   const adminLayout = buildAdminLayout();
   const moduleView = adminLayout.module;
+  let menuStockSubscribed = false;
+  function updateStockControls() {
+    if (currentPage !== 'menus') return;
+    moduleView.querySelectorAll('[data-stock-item]').forEach(row => {
+      const sku = Number(row.dataset.stockItem);
+      const info = window.rrMenuAvailability?.get(sku);
+      if (!info) return;
+      const available = info.available;
+      row.querySelector('strong').textContent = info.name;
+      const state = row.querySelector('.stock-item-state');
+      state.textContent = available ? 'Available for orders' : 'Out of stock';
+      state.classList.toggle('is-available', available);
+      state.classList.toggle('is-sold-out', !available);
+      const button = row.querySelector('.stock-toggle');
+      button.dataset.available = String(available);
+      button.setAttribute('aria-pressed', String(!available));
+      button.textContent = available ? 'Mark out of stock' : 'Mark available';
+      button.classList.toggle('is-available', available);
+      button.classList.toggle('is-sold-out', !available);
+      button.disabled = false;
+    });
+  }
   const setPage = page => {
     currentPage = page;
     adminLayout.main.classList.toggle('is-dashboard-home', page === 'dashboard');
@@ -111,6 +151,22 @@
     if (button) setPage(button.dataset.page);
   });
   moduleView.addEventListener('click', event => {
+    const stockButton = event.target.closest('[data-stock-sku]');
+    if (stockButton) {
+      const feedback = moduleView.querySelector('.stock-feedback');
+      const sku = Number(stockButton.dataset.stockSku);
+      const makeAvailable = stockButton.dataset.available !== 'false';
+      stockButton.disabled = true;
+      if (feedback) feedback.textContent = 'Saving menu availability…';
+      window.rrMenuAvailability?.set(sku, !makeAvailable).then(() => {
+        if (feedback) feedback.textContent = `${window.rrMenuAvailability.get(sku)?.name || 'Menu item'} updated on the website.`;
+        render();
+      }).catch(error => {
+        if (feedback) feedback.textContent = error.message || 'Could not update availability. Sign in and try again.';
+        stockButton.disabled = false;
+      });
+      return;
+    }
     const button = event.target.closest('[data-page]');
     if (button) setPage(button.dataset.page);
   });
@@ -204,7 +260,10 @@
       const totalQuantity = allMenuItems.reduce((sum,item)=>sum+item.quantity,0);
       const totalSales = allMenuItems.reduce((sum,item)=>sum+item.sales,0);
       const totalsRow = allMenuItems.length ? `<tfoot><tr><td style="font-weight:700;background:#f1f7f2;border-top:2px solid #dce8dd;color:#174b2a">Total</td><td style="font-weight:700;background:#f1f7f2;border-top:2px solid #dce8dd;color:#174b2a">${totalQuantity}</td><td style="font-weight:700;background:#f1f7f2;border-top:2px solid #dce8dd;color:#174b2a">${money(totalSales)}</td></tr></tfoot>` : '';
-      moduleView.innerHTML = `<div class="module-heading"><span class="eyebrow">MENU PERFORMANCE</span><h2>Popular dishes</h2><p>Items are ranked by quantity sold in the selected date range.</p></div><div class="module-table-wrap"><table class="module-table"><thead><tr><th>Menu item</th><th>Quantity sold</th><th>Item sales</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="module-empty">Popular items will appear after orders arrive.</td></tr>'}</tbody>${totalsRow}</table></div>`;
+      const stockNames = ['Andhra Dum Pulav','Spicy Chicken Biryani','Boneless Chicken Biryani','Full Joint Biryani','Fried Piece Biryani','Chicken Dum Biryani','Chicken 65 Biryani','Pepper Chicken Biryani','Chicken Fry Biryani','Tandoori Chicken','Chicken Lollipop','Grilled Chicken','Egg Roll','Chicken Roll','Paneer Roll','Butter Naan','French Fries','Sandwich','Burger','Prawns Biryani','Mushroom Biryani','Chicken Soup','Mutton Soup'];
+      const stockRows = stockNames.map((name,index)=>{const sku=index+1;const available=window.rrMenuAvailability?.get(sku)?.available!==false;return `<article class="stock-item" data-stock-item="${sku}"><div><strong>${escapeHtml(window.rrMenuAvailability?.get(sku)?.name||name)}</strong><small class="stock-item-state ${available?'is-available':'is-sold-out'}">${available?'Available for orders':'Out of stock'}</small></div><button type="button" class="stock-toggle ${available?'is-available':'is-sold-out'}" data-stock-sku="${sku}" data-available="${available}" aria-pressed="${!available}">${available?'Mark out of stock':'Mark available'}</button></article>`}).join('');
+      moduleView.innerHTML = `<div class="module-heading"><span class="eyebrow">MENU PERFORMANCE</span><h2>Popular dishes</h2><p>Items are ranked by quantity sold in the selected date range.</p></div><div class="module-table-wrap"><table class="module-table"><thead><tr><th>Menu item</th><th>Quantity sold</th><th>Item sales</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="module-empty">Popular items will appear after orders arrive.</td></tr>'}</tbody>${totalsRow}</table></div><section class="stock-manager"><div class="stock-manager-heading"><div><span class="eyebrow">MENU AVAILABILITY</span><h3>Manage dish availability</h3><p>Out-of-stock dishes cannot be ordered from the website.</p></div><span class="stock-live-indicator">● Live menu</span></div><div class="stock-list">${stockRows}</div><p class="stock-feedback" role="status" aria-live="polite"></p></section>`;
+      window.rrMenuAvailability?.load().then(loaded=>{if(loaded&&currentPage==='menus'){if(!menuStockSubscribed){window.rrMenuAvailability.subscribe(updateStockControls);menuStockSubscribed=true;}updateStockControls();}});
     } else if (currentPage === 'dashboard') {
       const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
       const weekOrders = load().filter(order => order.status !== 'cancelled' && new Date(order.createdAt) >= weekStart);
