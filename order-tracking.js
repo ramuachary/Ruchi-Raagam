@@ -104,7 +104,7 @@
       return `<li class="tracking-step ${state}"><span class="tracking-step-dot" aria-hidden="true">${index < currentIndex ? '✓' : index + 1}</span><span>${label}</span></li>`;
     }).join('');
     const updated = order.updatedAt ? new Date(order.updatedAt).toLocaleString(document.documentElement.lang === 'te' ? 'te-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '';
-    const trackingMarkup = `<div class="tracking-order-ref"><span>${t('Order reference', 'ఆర్డర్ రిఫరెన్స్')}</span><strong>${escapeHtml(order.id)}</strong></div><div class="tracking-current">${current[document.documentElement.lang === 'te' ? 1 : 0]}</div>${order.deliveryPerson && order.fulfillment !== 'pickup' ? `<p class="tracking-delivery-person"><span>${t('Your delivery partner', 'మీ డెలివరీ భాగస్వామి')}</span><strong>${escapeHtml(order.deliveryPerson)}</strong></p>` : ''}<ol class="tracking-timeline">${timeline}</ol><small class="tracking-updated">${updated ? `${t('Last updated', 'చివరిగా అప్‌డేట్ అయిన సమయం')}: ${escapeHtml(updated)}` : ''}</small>`;
+    const trackingMarkup = `<div class="tracking-order-ref"><span>${t('Order reference', 'ఆర్డర్ రిఫరెన్స్')}</span><strong>${escapeHtml(order.id)}</strong></div><div class="tracking-current">${current[document.documentElement.lang === 'te' ? 1 : 0]}</div>${order.deliveryPerson && order.fulfillment !== 'pickup' ? `<div class="tracking-delivery-person"><span class="tracking-assignment-check" aria-hidden="true">✓</span><div><strong>${escapeHtml(order.deliveryPerson)} ${t('accepted your order', 'మీ ఆర్డర్‌ను స్వీకరించారు')}</strong><small>${t('Your delivery partner', 'మీ డెలివరీ భాగస్వామి')}</small></div></div>` : ''}<ol class="tracking-timeline">${timeline}</ol><small class="tracking-updated">${updated ? `${t('Last updated', 'చివరిగా అప్‌డేట్ అయిన సమయం')}: ${escapeHtml(updated)}` : ''}</small>`;
     result.innerHTML = trackingMarkup;
     if (order.status === 'delivered' && Array.isArray(order.items) && order.items.length) {
       const invoiceActions = document.createElement('div');
@@ -145,8 +145,26 @@
       const locale = document.documentElement.lang === 'te' ? 'te-IN' : 'en-IN';
       const startTime = new Date(created.getTime() + startMinutes * 60_000).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
       const endTime = new Date(created.getTime() + endMinutes * 60_000).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-      eta.innerHTML = `<span>${t(order.fulfillment === 'pickup' ? 'Estimated pickup' : 'Estimated delivery', order.fulfillment === 'pickup' ? 'అంచనా పికప్ సమయం' : 'అంచనా డెలివరీ సమయం')}</span><strong>${t(`${startTime}–${endTime} (about ${startMinutes}–${endMinutes} min after order)`, `ఆర్డర్ తర్వాత సుమారు ${startMinutes}–${endMinutes} నిమిషాలు · ${startTime}–${endTime}`)}</strong>`;
-      result.querySelector('.tracking-current')?.after(eta);
+      const hasDeliveryPartner = Boolean(order.deliveryPerson && order.fulfillment !== 'pickup');
+      let etaText = `${startTime}–${endTime} (about ${startMinutes}–${endMinutes} min after order)`;
+      let etaTextTe = `ఆర్డర్ తర్వాత సుమారు ${startMinutes}–${endMinutes} నిమిషాలు · ${startTime}–${endTime}`;
+      if (hasDeliveryPartner) {
+        const minute = 60_000;
+        const remainingStart = Math.max(0, Math.ceil((created.getTime() + startMinutes * minute - Date.now()) / minute));
+        const remainingEnd = Math.max(0, Math.ceil((created.getTime() + endMinutes * minute - Date.now()) / minute));
+        if (remainingEnd === 0) {
+          etaText = 'Your order should arrive any moment now.';
+          etaTextTe = 'మీ ఆర్డర్ ఏ క్షణంలోనైనా చేరవచ్చు.';
+        } else if (remainingStart === 0) {
+          etaText = `Your order should arrive in about ${remainingEnd} min.`;
+          etaTextTe = `మీ ఆర్డర్ సుమారు ${remainingEnd} నిమిషాల్లో చేరుతుంది.`;
+        } else {
+          etaText = `Your order should arrive in about ${remainingStart}–${remainingEnd} min.`;
+          etaTextTe = `మీ ఆర్డర్ సుమారు ${remainingStart}–${remainingEnd} నిమిషాల్లో చేరుతుంది.`;
+        }
+      }
+      eta.innerHTML = `<span>${t(order.fulfillment === 'pickup' ? 'Estimated pickup' : 'Estimated delivery', order.fulfillment === 'pickup' ? 'అంచనా పికప్ సమయం' : 'అంచనా డెలివరీ సమయం')}</span><strong>${t(etaText, etaTextTe)}</strong>`;
+      (result.querySelector('.tracking-delivery-person') || result.querySelector('.tracking-current'))?.after(eta);
     }
     result.hidden = false;
     if (order.status === 'new') {

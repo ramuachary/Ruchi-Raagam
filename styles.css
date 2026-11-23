@@ -1046,3 +1046,14 @@ body[data-theme="dark"] .order-summary.checkout-opened .summary-label,body[data-
 .dish.is-out-of-stock .qty-button:disabled,.dish.is-out-of-stock .portion-select:disabled{cursor:not-allowed;opacity:.58}
 body[data-theme="dark"] .dish.is-out-of-stock{border-color:#ff625c;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 body[data-theme="dark"] .dish.is-out-of-stock .dish-copy{background:#302321}
+
+/* Customer tracking: make delivery assignment and ETA easy to spot. */
+.tracking-delivery-person{gap:12px;padding:13px 15px}
+.tracking-assignment-check{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:#28734c;color:#fff;font-weight:800}
+.tracking-delivery-person>div{display:grid;gap:3px}
+.tracking-delivery-person>div strong{color:#244a35;font-size:13px}
+.tracking-delivery-person>div small{color:#58745f;font-size:11px}
+body[data-theme="dark"] .tracking-delivery-person{border-color:#405a43;background:#202d23;color:#cde3d0}
+body[data-theme="dark"] .tracking-assignment-check{background:#347c51;color:#fff}
+body[data-theme="dark"] .tracking-delivery-person>div strong{color:#e5f2e6}
+body[data-theme="dark"] .tracking-delivery-person>div small{color:#b5c9b8}
