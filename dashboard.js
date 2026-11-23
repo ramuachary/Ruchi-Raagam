@@ -330,6 +330,38 @@
       const deliveryCount=validOrders.filter(order=>order.fulfillment!=='pickup').length, pickupCount=validOrders.filter(order=>order.fulfillment==='pickup').length;
       moduleView.innerHTML=`<div class="analytics-page"><div class="analytics-intro"><div><span class="eyebrow">PERFORMANCE</span><h2>Sales analytics</h2><p>Track order value, outcomes and the dishes customers choose.</p></div><span class="analytics-range-label">${({today:'Today',week:'This week',month:'This month',all:'All time'})[period]}</span></div><div class="analytics-kpis"><article><span>Average order value</span><strong>${money(averageOrder)}</strong><small>Across ${validOrders.length} non-cancelled orders</small></article><article><span>Cancelled orders</span><strong>${statusCounts.cancelled}</strong><small>${orders.length?Math.round(statusCounts.cancelled/orders.length*100):0}% of orders in this period</small></article><article><span>Returning customers</span><strong>${repeatCustomers}</strong><small>Ordered more than once in this period</small></article><article><span>Items sold</span><strong>${itemQuantity}</strong><small>Total item quantity in this period</small></article></div><div class="analytics-grid"><section class="analytics-panel trend-panel"><div class="analytics-panel-heading"><div><h3>Sales trend</h3><p>${period==='all'?'Order value · recent 6 months':'Order value · excluding cancelled orders'}</p></div><strong>${money(validRevenue)}</strong></div>${trendSvg}</section><section class="analytics-panel status-panel"><div class="analytics-panel-heading"><div><h3>Order status</h3><p>${orders.length} total orders in this period</p></div></div><div class="analytics-status-body"><div class="analytics-donut" style="${orders.length?`--active:${activePct}%;--done:${donePct}%;--cancelled:${cancelledPct}%`:'background:conic-gradient(#e8ece8 0 100%)'}"><strong>${orders.length}</strong><small>orders</small></div><ul><li><i class="analytics-active-key"></i>In progress <b>${orders.length?activePct:0}%</b><span>${statusCounts.active}</span></li><li><i class="analytics-done-key"></i>Completed <b>${orders.length?donePct:0}%</b><span>${statusCounts.done}</span></li><li><i class="analytics-cancel-key"></i>Cancelled <b>${orders.length?cancelledPct:0}%</b><span>${statusCounts.cancelled}</span></li></ul></div><div class="fulfilment-summary"><span>Delivery <b>${deliveryCount}</b></span><span>Pickup <b>${pickupCount}</b></span></div></section><section class="analytics-panel item-performance-panel"><div class="analytics-panel-heading"><div><h3>Best-selling dishes</h3><p>Sorted by item sales for the selected period</p></div><button class="text-action" data-page="menus">View menu report →</button></div><div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Dish</th><th>Qty sold</th><th>Sales</th><th>Share</th></tr></thead><tbody>${itemRows||'<tr><td colspan="4" class="analytics-empty">Menu sales will show here after orders arrive.</td></tr>'}</tbody></table></div></section></div></div>`;
     }
+    if (currentPage === 'analytics' && !moduleView.hidden) {
+      const paymentGroups = new Map();
+      const providerLabels = { paytm: 'Paytm UPI', gpay: 'Google Pay', icici: 'ICICI Netbanking', hdfc: 'HDFC Netbanking' };
+      const paymentLabels = { cod: 'Cash on delivery', phonepe: 'PhonePe', upi: 'UPI', internetbanking: 'Internet Banking', razorpay: 'Online payment' };
+      ['cod', 'phonepe', 'upi', 'internetbanking'].forEach(method => paymentGroups.set(method, { label: paymentLabels[method], orders: [], orderValue: 0, collected: 0, pending: 0, refunded: 0 }));
+      orders.filter(order => order.status !== 'cancelled').forEach(order => {
+        const method = String(order.payment || 'cod').toLowerCase();
+        const provider = String(order.paymentProvider || '').toLowerCase();
+        const key = method === 'razorpay' && provider ? `provider:${provider}` : method;
+        const label = method === 'razorpay' ? (providerLabels[provider] || paymentLabels.razorpay) : (paymentLabels[method] || method.replace(/[_-]/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase()));
+        const group = paymentGroups.get(key) || { label, orders: [], orderValue: 0, collected: 0, pending: 0, refunded: 0 };
+        const amount = Number(order.total || 0);
+        const paymentStatus = order.paymentStatus || 'unpaid';
+        group.orders.push(order);
+        group.orderValue += amount;
+        if (paymentStatus === 'paid') group.collected += amount;
+        else if (paymentStatus === 'refunded') group.refunded += amount;
+        else if (paymentStatus === 'unpaid') group.pending += amount;
+        paymentGroups.set(key, group);
+      });
+      const paymentOrderCount = [...paymentGroups.values()].reduce((sum, group) => sum + group.orders.length, 0);
+      const paymentCollectedTotal = [...paymentGroups.values()].reduce((sum, group) => sum + group.collected, 0);
+      const folders = [...paymentGroups.values()].sort((a, b) => b.orderValue - a.orderValue).map(group => {
+        const orderRows = group.orders.map(order => {
+          const status = order.paymentStatus || 'unpaid';
+          return `<div class="payment-folder-order"><div><strong title="${escapeHtml(order.id || '')}">${escapeHtml(String(order.id || 'Order').slice(0, 18))}</strong><small>${escapeHtml(order.customer?.name || 'Customer')} · ${escapeHtml(paymentStatusLabels[status] || status)}</small></div><b>${money(order.total)}</b></div>`;
+        }).join('');
+        return `<details class="payment-folder"><summary><span class="payment-folder-icon" aria-hidden="true">₹</span><span class="payment-folder-main"><strong>${escapeHtml(group.label)}</strong><small>${group.orders.length} order${group.orders.length === 1 ? '' : 's'} · Collected ${money(group.collected)}</small></span><span class="payment-folder-total"><small>Order value</small><strong>${money(group.orderValue)}</strong></span></summary><div class="payment-folder-content"><div class="payment-folder-stats"><span>Collected <b>${money(group.collected)}</b></span><span>Pending <b>${money(group.pending)}</b></span>${group.refunded ? `<span>Refunded <b>${money(group.refunded)}</b></span>` : ''}</div>${orderRows}</div></details>`;
+      }).join('');
+      const paymentReport = `<section class="analytics-panel payment-report-panel"><div class="analytics-panel-heading"><div><h3>Payments by method</h3><p>Expand a payment folder to see its orders and collected totals.</p></div></div><div class="payment-report-totals"><article><span>Total payment orders</span><strong>${paymentOrderCount}</strong></article><article><span>Total collected</span><strong>${money(paymentCollectedTotal)}</strong></article></div><div class="payment-folder-list">${folders || '<div class="payment-report-empty">Payment reports will appear after orders arrive.</div>'}</div></section>`;
+      moduleView.querySelector('.analytics-grid')?.insertAdjacentHTML('beforeend', paymentReport);
+    }
   }
 
   function updateOrder(id, changes) {

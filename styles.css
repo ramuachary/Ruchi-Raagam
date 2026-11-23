@@ -1036,3 +1036,13 @@ body[data-theme="dark"] .menu-drawer{border-color:#3b493e;background:#1b241e;col
 body[data-theme="dark"] #menu .reorder-last-button{border-color:#735139;background:#2b251f;color:#f1bf8a}body[data-theme="dark"] .support-section:not([hidden]){background:rgba(4,8,5,.72)!important}
 body[data-theme="dark"] .order-summary.checkout-opened .summary-label,body[data-theme="dark"] .order-summary.checkout-opened #orderCount{color:#e7ded2}
 @media(max-width:760px){body[data-theme="dark"] header .top-contact{background:#202923;border-color:#3b493e}body[data-theme="dark"] header .links{background:#1b241e}}
+
+/* Customer menu: make unavailable dishes unmistakable. */
+.dish.is-out-of-stock{border:2px solid #c9342f;box-shadow:0 8px 24px rgba(166,38,35,.12)}
+.dish.is-out-of-stock .dish-img::after{content:"";position:absolute;inset:0;background:rgba(153,30,27,.42)}
+.dish-img .stock-status{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);padding:9px 14px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:#c62828;color:#fff;font-size:13px;font-weight:800;letter-spacing:.03em;white-space:nowrap;box-shadow:0 5px 18px rgba(80,0,0,.3)}
+.dish-img .stock-status[hidden]{display:none}
+.dish.is-out-of-stock .dish-copy{background:#fff7f6;opacity:1}
+.dish.is-out-of-stock .qty-button:disabled,.dish.is-out-of-stock .portion-select:disabled{cursor:not-allowed;opacity:.58}
+body[data-theme="dark"] .dish.is-out-of-stock{border-color:#ff625c;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+body[data-theme="dark"] .dish.is-out-of-stock .dish-copy{background:#302321}
