@@ -40,6 +40,140 @@
     else notificationAudio.resume().then(play).catch(() => {});
   };
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  const customerOrderAlias = name => {
+    const slug = String(name || 'customer').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 32);
+    return `${slug || 'customer'}@gmail.com`;
+  };
+  const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  let statementFrequency = 'daily';
+  let statementDate = dateKey(new Date());
+  let statementMonth = statementDate.slice(0, 7);
+  let statementYear = String(new Date().getFullYear());
+  const getStatementSelection = () => ({
+    value: statementFrequency === 'daily' ? statementDate : statementFrequency === 'monthly' ? statementMonth : statementYear,
+    title: statementFrequency === 'daily' ? new Date(`${statementDate}T00:00:00`).toLocaleDateString('en-IN', { dateStyle: 'long' }) : statementFrequency === 'monthly' ? new Date(`${statementMonth}-01T00:00:00`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : statementYear
+  });
+  const getStatementOrders = () => load().filter(order => {
+    const created = new Date(order.createdAt || order.created_at || '');
+    if (Number.isNaN(created.getTime())) return false;
+    return statementFrequency === 'daily' ? dateKey(created) === statementDate : statementFrequency === 'monthly' ? dateKey(created).slice(0, 7) === statementMonth : String(created.getFullYear()) === statementYear;
+  });
+  const makeStatementReport = orders => {
+    const valid = orders.filter(order => order.status !== 'cancelled');
+    const paymentLabels = { cod: 'Cash on delivery', phonepe: 'PhonePe', upi: 'UPI', internetbanking: 'Internet Banking', razorpay: 'Online payment' };
+    const providerLabels = { paytm: 'Paytm UPI', gpay: 'Google Pay', icici: 'ICICI Netbanking', hdfc: 'HDFC Netbanking' };
+    const paymentGroups = new Map(['cod', 'phonepe', 'upi', 'internetbanking'].map(key => [key, { name: paymentLabels[key], count: 0, value: 0, collected: 0, pending: 0 }]));
+    const dishes = new Map();
+    valid.forEach(order => {
+      const method = String(order.payment || 'cod').toLowerCase();
+      const provider = String(order.paymentProvider || '').toLowerCase();
+      const key = method === 'razorpay' && provider ? `provider:${provider}` : method;
+      const name = method === 'razorpay' ? providerLabels[provider] || paymentLabels.razorpay : paymentLabels[method] || method.replace(/[_-]/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
+      const group = paymentGroups.get(key) || { name, count: 0, value: 0, collected: 0, pending: 0 };
+      const total = Number(order.total || 0);
+      group.count += 1;
+      group.value += total;
+      if (order.paymentStatus === 'paid') group.collected += total;
+      else if (!['failed', 'refunded'].includes(order.paymentStatus)) group.pending += total;
+      paymentGroups.set(key, group);
+      (order.items || []).forEach(item => {
+        const itemName = item.name || 'Menu item';
+        const row = dishes.get(itemName) || { name: itemName, quantity: 0, sales: 0 };
+        row.quantity += Number(item.quantity || 0);
+        row.sales += Number(item.price || 0) * Number(item.quantity || 0);
+        dishes.set(itemName, row);
+      });
+    });
+    return {
+      totalOrders: orders.length,
+      sales: valid.reduce((sum, order) => sum + Number(order.total || 0), 0),
+      delivered: orders.filter(order => ['delivered', 'picked_up'].includes(order.status)).length,
+      cancelled: orders.filter(order => order.status === 'cancelled').length,
+      collected: valid.filter(order => order.paymentStatus === 'paid').reduce((sum, order) => sum + Number(order.total || 0), 0),
+      payments: [...paymentGroups.values()].sort((a, b) => b.value - a.value || a.name.localeCompare(b.name)),
+      dishes: [...dishes.values()].sort((a, b) => b.sales - a.sales).slice(0, 8)
+    };
+  };
+  const downloadStatementPdf = (selection, report) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1275;
+    canvas.height = 1804;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.scale(1.5, 1.5);
+    const width = 850, height = 1202, margin = 52, right = width - margin;
+    const line = '#e5ddd4', ink = '#2b241f', muted = '#786b61', green = '#175f35', orange = '#b9492c', pale = '#f6f2ec';
+    context.fillStyle = '#fffdfa'; context.fillRect(0, 0, width, height);
+    context.strokeStyle = '#ddc9b4'; context.lineWidth = 1.5; context.strokeRect(20, 20, width - 40, height - 40);
+    context.fillStyle = orange; context.fillRect(32, 20, width - 64, 6);
+    context.textAlign = 'center'; context.fillStyle = ink; context.font = 'bold 32px Georgia,serif'; context.fillText('Ruchi Raagam', width / 2, 68);
+    context.fillStyle = muted; context.font = '12px Arial,sans-serif'; context.fillText('RESTAURANT SALES STATEMENT', width / 2, 92);
+    const typeLabel = statementFrequency === 'daily' ? 'DAILY STATEMENT' : statementFrequency === 'monthly' ? 'MONTHLY STATEMENT' : 'YEARLY STATEMENT';
+    context.fillStyle = orange; context.font = 'bold 14px Arial,sans-serif'; context.fillText(typeLabel, width / 2, 127);
+    context.fillStyle = ink; context.font = 'bold 18px Arial,sans-serif'; context.fillText(selection.title, width / 2, 153);
+    context.textAlign = 'left';
+    context.strokeStyle = line; context.beginPath(); context.moveTo(margin, 173); context.lineTo(right, 173); context.stroke();
+    const tiles = [['Total orders', String(report.totalOrders)], ['Sales (excl. cancelled)', money(report.sales)], ['Delivered / picked up', String(report.delivered)], ['Payment accepted', money(report.collected)]];
+    const tileW = (width - margin * 2 - 16) / 2, tileH = 66;
+    tiles.forEach(([label, value], index) => {
+      const x = margin + (index % 2) * (tileW + 16), y = 190 + Math.floor(index / 2) * (tileH + 10);
+      context.fillStyle = pale; context.fillRect(x, y, tileW, tileH);
+      context.fillStyle = muted; context.font = '11px Arial,sans-serif'; context.fillText(label, x + 14, y + 22);
+      context.fillStyle = index === 3 ? green : ink; context.font = 'bold 21px Arial,sans-serif'; context.fillText(value, x + 14, y + 50);
+    });
+    context.fillStyle = ink; context.font = 'bold 16px Georgia,serif'; context.fillText('Payments by method', margin, 362);
+    let y = 382;
+    context.fillStyle = '#eee7df'; context.fillRect(margin, y, width - margin * 2, 30);
+    context.fillStyle = muted; context.font = 'bold 10px Arial,sans-serif';
+    context.fillText('METHOD', margin + 10, y + 20); context.textAlign = 'right';
+    context.fillText('ORDERS', 555, y + 20); context.fillText('ORDER VALUE', 680, y + 20); context.fillText('COLLECTED', right - 10, y + 20); context.textAlign = 'left';
+    y += 30;
+    for (const payment of report.payments) {
+      context.strokeStyle = line; context.beginPath(); context.moveTo(margin, y + 29); context.lineTo(right, y + 29); context.stroke();
+      context.fillStyle = ink; context.font = '12px Arial,sans-serif'; context.fillText(payment.name.slice(0, 36), margin + 10, y + 19);
+      context.textAlign = 'right'; context.fillText(String(payment.count), 555, y + 19); context.fillText(money(payment.value), 680, y + 19); context.fillStyle = green; context.fillText(money(payment.collected), right - 10, y + 19); context.textAlign = 'left';
+      y += 30;
+    }
+    y += 22;
+    context.fillStyle = ink; context.font = 'bold 16px Georgia,serif'; context.fillText('Top selling dishes', margin, y);
+    y += 18;
+    context.fillStyle = '#eee7df'; context.fillRect(margin, y, width - margin * 2, 30);
+    context.fillStyle = muted; context.font = 'bold 10px Arial,sans-serif'; context.fillText('DISH', margin + 10, y + 20); context.textAlign = 'right'; context.fillText('QUANTITY', 590, y + 20); context.fillText('ITEM SALES', right - 10, y + 20); context.textAlign = 'left';
+    y += 30;
+    for (const dish of report.dishes) {
+      if (y > 1032) break;
+      context.strokeStyle = line; context.beginPath(); context.moveTo(margin, y + 29); context.lineTo(right, y + 29); context.stroke();
+      context.fillStyle = ink; context.font = '12px Arial,sans-serif'; context.fillText(dish.name.slice(0, 54), margin + 10, y + 19);
+      context.textAlign = 'right'; context.fillText(String(dish.quantity), 590, y + 19); context.fillText(money(dish.sales), right - 10, y + 19); context.textAlign = 'left';
+      y += 30;
+    }
+    context.fillStyle = muted; context.font = '10px Arial,sans-serif';
+    context.fillText('Sales exclude cancelled orders. Payment accepted includes orders marked as paid in the dashboard.', margin, 1090);
+    context.textAlign = 'center'; context.fillStyle = green; context.font = 'bold 12px Georgia,serif'; context.fillText('Ruchi Raagam · Andhra Cuisine', width / 2, 1138); context.textAlign = 'left';
+    const jpeg = atob(canvas.toDataURL('image/jpeg', 0.94).split(',')[1]);
+    const imageBytes = Uint8Array.from(jpeg, char => char.charCodeAt(0));
+    const encoder = new TextEncoder(), encode = value => encoder.encode(value);
+    const join = chunks => { const output = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0)); let offset = 0; for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.length; } return output; };
+    const pageContent = encode('q 595.28 0 0 841.89 0 0 cm /Im0 Do Q\n');
+    const objects = [
+      encode('<< /Type /Catalog /Pages 2 0 R >>'),
+      encode('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'),
+      encode('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>'),
+      join([encode(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBytes.length} >>\nstream\n`), imageBytes, encode('\nendstream')]),
+      join([encode(`<< /Length ${pageContent.length} >>\nstream\n`), pageContent, encode('endstream')])
+    ];
+    const chunks = [encode('%PDF-1.4\n%RR\n')], offsets = [0];
+    let length = chunks[0].length;
+    objects.forEach((object, index) => { offsets.push(length); const objectChunk = join([encode(`${index + 1} 0 obj\n`), object, encode('\nendobj\n')]); chunks.push(objectChunk); length += objectChunk.length; });
+    const xrefOffset = length;
+    chunks.push(encode(`xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`));
+    const blob = new Blob([join(chunks)], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `ruchi-raagam-${statementFrequency}-statement-${selection.value}.pdf`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  };
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
   const loadReviews = () => { try { return JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]'); } catch { return []; } };
   const save = orders => { try { localStorage.setItem(KEY, JSON.stringify(orders)); window.dispatchEvent(new CustomEvent('rr:local-orders-changed', { detail: orders })); } catch { toast('Could not save orders in this browser.'); } };
@@ -151,6 +285,10 @@
     if (button) setPage(button.dataset.page);
   });
   moduleView.addEventListener('click', event => {
+    if (event.target.closest('[data-download-statement]')) {
+      downloadStatementPdf(getStatementSelection(), makeStatementReport(getStatementOrders()));
+      return;
+    }
     const stockButton = event.target.closest('[data-stock-sku]');
     if (stockButton) {
       const feedback = moduleView.querySelector('.stock-feedback');
@@ -169,6 +307,14 @@
     }
     const button = event.target.closest('[data-page]');
     if (button) setPage(button.dataset.page);
+  });
+  moduleView.addEventListener('change', event => {
+    if (event.target.id === 'statementFrequency') statementFrequency = event.target.value;
+    else if (event.target.id === 'statementDay') statementDate = event.target.value || statementDate;
+    else if (event.target.id === 'statementMonth') statementMonth = event.target.value || statementMonth;
+    else if (event.target.id === 'statementYear') statementYear = event.target.value || statementYear;
+    else return;
+    render();
   });
 
   const nextStatus = order => {
@@ -227,6 +373,25 @@
       return `<tr data-id="${escapeHtml(order.id)}"><td data-label="Order ID"><strong class="table-order-id">${escapeHtml(order.id)}</strong><small>${escapeHtml(order.sentVia || 'Website')}</small></td><td data-label="Date"><span>${new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></td><td data-label="Customer"><strong class="table-customer-name">${escapeHtml(order.customer?.name || 'Customer')}</strong><a class="table-phone" href="tel:${escapeHtml(order.customer?.phone || '')}">${escapeHtml(order.customer?.phone || '')}</a><span class="table-payment-method ${paymentMethodClass}">Payment: ${escapeHtml(basePaymentName)}</span><details class="order-details"><summary>${itemCount} item${itemCount === 1 ? '' : 's'} · Details</summary><div class="details-address"><strong>Delivery area / address</strong><br>${escapeHtml(address || 'No address supplied')}</div><div class="details-items">${items || '<div class="item">Order items unavailable</div>'}</div><div class="details-payment">${escapeHtml(paymentName)}${order.customer?.note ? ` · Note: ${escapeHtml(order.customer.note)}` : ''}</div><div class=\"order-pricing\"><div><span>Items subtotal</span><strong>${money(Number(order.subtotal || 0))}</strong></div><div><span>Delivery</span><strong>${money(Number(order.deliveryCharge || 0))}</strong></div><div><span>Packaging</span><strong>${money(Number(order.packagingCharge || 0))}</strong></div><div><span>Platform</span><strong>${money(Number(order.platformFee || 0))}</strong></div><div><span>Restaurant GST</span><strong>${money(Number(order.gstCharge || 0))}</strong></div><div><span>Delivery tip</span><strong>${money(Number(order.tip || 0))}</strong></div><div><span>Coupon discount</span><strong>−${money(Number(order.discount || 0))}</strong></div></div><label class=\"assignment-field\"><span>Accepted by</span><input class="assignment-input" data-assignment="acceptedBy" maxlength="120" value="${escapeHtml(order.acceptedBy || '')}" placeholder="Staff name"></label>${order.fulfillment !== 'pickup' ? `<label class="assignment-field"><span>Delivery person</span><input class="assignment-input" data-assignment="deliveryPerson" maxlength="120" value="${escapeHtml(order.deliveryPerson || '')}" placeholder="Assign delivery person"></label>` : ''}</details></td><td data-label="Location"><span class="table-location">${escapeHtml(address || 'No address supplied')}</span></td><td data-label="Amount"><strong class="table-amount">${money(order.total)}</strong></td><td data-label="Status"><span class="badge ${escapeHtml(order.status)}">${status}</span></td><td data-label="Action"><div class="table-actions"><label class="sr-only" for="status-${escapeHtml(order.id)}">Update status</label><select class="status status-${escapeHtml(order.status)}" id="status-${escapeHtml(order.id)}" aria-label="Order status">${Object.entries(labels).map(([value, text]) => `<option value="${value}" ${order.status === value ? 'selected' : ''}>${text}</option>`).join('')}</select>${next ? `<button class="btn btn-primary advance" type="button">${actionLabel(next)}</button>` : ''}<label class="sr-only" for="fulfillment-${escapeHtml(order.id)}">Fulfilment type</label><select class="fulfillment fulfillment-${order.fulfillment === 'pickup' ? 'pickup' : 'delivery'}" id="fulfillment-${escapeHtml(order.id)}" aria-label="Fulfilment type"><option value="delivery" ${order.fulfillment !== 'pickup' ? 'selected' : ''}>Delivery</option><option value="pickup" ${order.fulfillment === 'pickup' ? 'selected' : ''}>Pickup</option></select><label class="sr-only" for="payment-${escapeHtml(order.id)}">Payment status</label><select class="payment-status payment-${escapeHtml(paymentStatus)}" id="payment-${escapeHtml(order.id)}" aria-label="Payment status">${Object.entries(paymentStatusLabels).map(([value, text]) => `<option value="${value}" ${paymentStatus === value ? 'selected' : ''}>${text}</option>`).join('')}</select></div></td></tr>`;
     }).join('');
     ordersEl.innerHTML = `<div class="orders-table-wrap"><table class="orders-table"><thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Location</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const orderHeader = ordersEl.querySelector('.orders-table thead th');
+    if (orderHeader) orderHeader.textContent = 'Order label';
+    ordersEl.querySelectorAll('.orders-table tbody tr[data-id]').forEach(row => {
+      const id = row.dataset.id;
+      const name = row.querySelector('.table-customer-name')?.textContent || 'Customer';
+      const label = row.querySelector('.table-order-id');
+      if (!label) return;
+      label.textContent = customerOrderAlias(name);
+      label.title = `Display-only label · Actual order reference: ${id}`;
+      const orderCell = label.closest('td');
+      orderCell?.setAttribute('data-label', 'Order label');
+      const details = row.querySelector('.order-details');
+      if (details && !details.querySelector('.details-order-reference')) {
+        const reference = document.createElement('div');
+        reference.className = 'details-order-reference';
+        reference.textContent = `Actual order reference: ${id}`;
+        details.prepend(reference);
+      }
+    });
     if (!moduleView.hidden) renderModule(orders);
   }
 
@@ -361,6 +526,12 @@
       }).join('');
       const paymentReport = `<section class="analytics-panel payment-report-panel"><div class="analytics-panel-heading"><div><h3>Payments by method</h3><p>Expand a payment folder to see its orders and collected totals.</p></div></div><div class="payment-report-totals"><article><span>Total payment orders</span><strong>${paymentOrderCount}</strong></article><article><span>Total collected</span><strong>${money(paymentCollectedTotal)}</strong></article></div><div class="payment-folder-list">${folders || '<div class="payment-report-empty">Payment reports will appear after orders arrive.</div>'}</div></section>`;
       moduleView.querySelector('.analytics-grid')?.insertAdjacentHTML('beforeend', paymentReport);
+      const statementSelection = getStatementSelection();
+      const statementReport = makeStatementReport(getStatementOrders());
+      const statementPaymentRows = statementReport.payments.map(payment => `<tr><td>${escapeHtml(payment.name)}</td><td>${payment.count}</td><td>${money(payment.value)}</td><td>${money(payment.collected)}</td></tr>`).join('');
+      const statementDishRows = statementReport.dishes.map(dish => `<tr><td>${escapeHtml(dish.name)}</td><td>${dish.quantity}</td><td>${money(dish.sales)}</td></tr>`).join('');
+      const statementMarkup = `<section class="statement-panel"><div class="statement-heading"><div><span class="eyebrow">REPORTS</span><h3>Sales statements</h3><p>Review a daily, monthly or yearly statement and save it as a PDF.</p></div><span class="statement-date-label">${escapeHtml(statementSelection.title)}</span></div><div class="statement-controls"><label>Statement period<select id="statementFrequency"><option value="daily" ${statementFrequency === 'daily' ? 'selected' : ''}>Daily</option><option value="monthly" ${statementFrequency === 'monthly' ? 'selected' : ''}>Monthly</option><option value="yearly" ${statementFrequency === 'yearly' ? 'selected' : ''}>Yearly</option></select></label><label ${statementFrequency !== 'daily' ? 'hidden' : ''}>Choose day<input id="statementDay" type="date" value="${escapeHtml(statementDate)}"></label><label ${statementFrequency !== 'monthly' ? 'hidden' : ''}>Choose month<input id="statementMonth" type="month" value="${escapeHtml(statementMonth)}"></label><label ${statementFrequency !== 'yearly' ? 'hidden' : ''}>Choose year<input id="statementYear" type="number" min="2020" max="${new Date().getFullYear()}" value="${escapeHtml(statementYear)}"></label><button type="button" class="statement-download" data-download-statement>Download PDF</button></div><div class="statement-summary-grid"><article><span>Total orders</span><strong>${statementReport.totalOrders}</strong></article><article><span>Sales excluding cancelled</span><strong>${money(statementReport.sales)}</strong></article><article><span>Delivered / picked up</span><strong>${statementReport.delivered}</strong></article><article><span>Cancelled</span><strong>${statementReport.cancelled}</strong></article><article><span>Payment accepted</span><strong>${money(statementReport.collected)}</strong></article></div><div class="statement-tables"><div><h4>Payment methods</h4><div class="statement-table-wrap"><table><thead><tr><th>Method</th><th>Orders</th><th>Order value</th><th>Collected</th></tr></thead><tbody>${statementPaymentRows}</tbody></table></div></div><div><h4>Top dishes</h4><div class="statement-table-wrap"><table><thead><tr><th>Dish</th><th>Qty</th><th>Sales</th></tr></thead><tbody>${statementDishRows || '<tr><td colspan="3">No item sales in this period.</td></tr>'}</tbody></table></div></div></div><p class="statement-note">Collected amount includes only orders marked Payment accepted. Cancelled orders are excluded from sales.</p></section>`;
+      moduleView.querySelector('.analytics-page')?.insertAdjacentHTML('beforeend', statementMarkup);
     }
   }
 
