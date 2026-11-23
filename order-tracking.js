@@ -191,6 +191,7 @@
     const markup = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Invoice ${escapeHtml(order.id)}</title><style>body{font:15px Arial,sans-serif;color:#30231c;max-width:760px;margin:40px auto;padding:0 24px;min-height:1000px;display:flex;flex-direction:column}header{display:flex;justify-content:space-between;border-bottom:2px solid #bb4e25;padding-bottom:18px}h1{font:700 30px Georgia,serif;margin:0 0 6px}.muted{color:#735f52;font-size:13px;line-height:1.6}.meta{margin:20px 0}table{width:100%;border-collapse:collapse;margin:22px 0}th,td{padding:11px 8px;border-bottom:1px solid #eadfd5;text-align:right}th:first-child,td:first-child{text-align:left}td small{display:block;color:#735f52;margin-top:4px}.totals{margin-left:auto;width:min(100%,360px)}.totals td,.totals th{border:0}.grand th,.grand td{border-top:2px solid #bb4e25;font-size:18px;font-weight:bold}.note{margin:auto 0 28px;padding-top:26px;text-align:center;color:#735f52;font-size:12px}</style><body><header><div><h1>Ruchi Raagam</h1><div class="muted">Andhra Cuisine · Hyderabad</div></div><div><strong>INVOICE</strong><div class="muted">Order ${escapeHtml(order.id)}</div><div class="muted">${escapeHtml(date)}</div></div></header><section class="meta"><strong>Bill to</strong><div>${escapeHtml(order.customerName || 'Customer')}</div><div class="muted">${address || '—'}</div>${order.deliveryPerson ? `<div class="muted">Delivery partner: ${escapeHtml(order.deliveryPerson)}</div>` : ''}</section><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table><table class="totals"><tbody><tr><th colspan="3">Items subtotal</th><td>${money(subtotal)}</td></tr>${amountRow('Delivery charge', order.deliveryCharge)}${amountRow('Packaging fee', order.packagingCharge)}${amountRow('Platform fee', order.platformFee)}${amountRow('Restaurant GST', order.gstCharge)}${amountRow('Delivery tip', order.tip)}${amountRow('Coupon discount', -Number(order.discount || 0))}<tr class="grand"><th colspan="3">Total paid / payable</th><td>${money(order.total)}</td></tr></tbody></table><div class="muted">Payment: ${escapeHtml(order.payment || '—')} · Status: ${escapeHtml(order.paymentStatus || 'unpaid')}</div><p class="note">Thank you for ordering from Ruchi Raagam.</p></body></html>`;
     const restaurantAddress = 'SR Nagar · Near Venkateswara Temple · Hyderabad 500038';
     const invoiceMarkup = markup
+      .replace('</style>', '*,*::before,*::after{box-sizing:border-box}body{width:min(760px,calc(100% - 32px));min-height:1120px;margin:24px auto;padding:34px 38px;border:1px solid #d9b997;border-radius:18px;background:#fffdfa;box-shadow:0 14px 40px rgba(72,43,23,.1);position:relative}body:before{content:"";position:absolute;top:0;left:20px;right:20px;height:6px;background:linear-gradient(90deg,#b94925,#e8ae54,#286345);border-radius:0 0 5px 5px}header{flex-direction:column;align-items:center;text-align:center;padding:10px 0 20px}header strong{display:block;margin-top:16px;color:#b94925;font-size:12px;letter-spacing:.18em}h1{font-size:38px;letter-spacing:-.04em;color:#2e2018}table{margin:14px 0}thead th{background:#f7efe5;color:#735f52;font-size:10px;text-transform:uppercase;letter-spacing:.08em}.address-grid>div{border:1px solid #eee1d4}.payment{margin-top:8px;padding:12px 14px;border-radius:8px;background:#f8f3ec}.note{margin:auto 0 0;font:600 14px Georgia,serif}@media(max-width:540px){body{width:calc(100% - 20px);min-height:1000px;margin:10px auto;padding:28px 18px}.address-grid{grid-template-columns:1fr}h1{font-size:32px}}}</style>')
       .replace('Andhra Cuisine · Hyderabad', 'Andhra Cuisine')
       .replace('.meta{margin:20px 0}', '.meta{margin:20px 0}.address-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.address-grid>div{padding:14px;background:#f8f1e9;border-radius:10px;line-height:1.6}.address-grid strong{display:block;margin-bottom:8px;color:#b94925;font-size:12px;text-transform:uppercase;letter-spacing:1px}@media(max-width:540px){.address-grid{grid-template-columns:1fr}}')
       .replace(/<section class="meta">.*?<\/section>/, `<section class="meta address-grid"><div><strong>Bill to</strong><div>${escapeHtml(order.customerName || 'Customer')}</div><div class="muted">${address || '—'}</div>${order.deliveryPerson ? `<div class="muted">Delivery partner: ${escapeHtml(order.deliveryPerson)}</div>` : ''}</div><div><strong>Restaurant</strong><div>Ruchi Raagam</div><div class="muted">${escapeHtml(restaurantAddress)}</div><div class="muted">+91 98765 43210</div><div class="muted">ruchiragam@gmail.com</div></div></section>`)
@@ -218,28 +219,31 @@
     const color = { ink: '#30231c', muted: '#735f52', line: '#eadfd5', accent: '#bd4f28', pale: '#f8f1e9', white: '#fffdfa' };
     context.fillStyle = color.white;
     context.fillRect(0, 0, pageWidth, pageHeight);
+    context.strokeStyle = '#d9b997';
+    context.lineWidth = 1.5;
+    context.strokeRect(20, 20, pageWidth - 40, pageHeight - 40);
     context.fillStyle = color.accent;
-    context.fillRect(0, 0, pageWidth, 8);
+    context.fillRect(32, 20, pageWidth - 64, 6);
     context.fillStyle = color.ink;
     context.font = 'bold 31px Georgia, serif';
-    context.fillText('Ruchi Raagam', margin, 67);
+    context.textAlign = 'center';
+    context.fillText('Ruchi Raagam', pageWidth / 2, 67);
     context.font = '12px Arial, sans-serif';
     context.fillStyle = color.muted;
-    context.fillText('AUTHENTIC ANDHRA CUISINE', margin, 92);
+    context.fillText('AUTHENTIC ANDHRA CUISINE', pageWidth / 2, 91);
     context.font = 'bold 15px Arial, sans-serif';
     context.fillStyle = color.accent;
-    context.textAlign = 'right';
-    context.fillText('INVOICE', right, 47);
+    context.fillText('INVOICE', pageWidth / 2, 126);
     context.font = '13px Arial, sans-serif';
     context.fillStyle = color.ink;
-    context.fillText(`Order ${order.id}`, right, 70);
+    context.fillText(`Order ${order.id}`, pageWidth / 2, 148);
     context.fillStyle = color.muted;
-    context.fillText(date, right, 92);
+    context.fillText(date, pageWidth / 2, 168);
     context.textAlign = 'left';
     context.strokeStyle = color.line;
-    context.beginPath(); context.moveTo(margin, 115); context.lineTo(right, 115); context.stroke();
+    context.beginPath(); context.moveTo(margin, 187); context.lineTo(right, 187); context.stroke();
 
-    const boxY = 137, boxH = 144, gutter = 20, boxW = (pageWidth - margin * 2 - gutter) / 2;
+    const boxY = 207, boxH = 144, gutter = 20, boxW = (pageWidth - margin * 2 - gutter) / 2;
     context.fillStyle = color.pale;
     context.fillRect(margin, boxY, boxW, boxH);
     context.fillRect(margin + boxW + gutter, boxY, boxW, boxH);
