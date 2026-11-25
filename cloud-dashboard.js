@@ -106,6 +106,8 @@
     let activeUserId = '';
     let refreshTimer = null;
     let refreshInFlight = false;
+    const dashboardNotice = document.querySelector('.notice');
+    const readyNotice = dashboardNotice?.textContent || '';
     const publish = orders => {
       lastOrders = orders;
       localStorage.setItem(KEY, JSON.stringify(orders));
@@ -115,6 +117,7 @@
       const { data, error } = await client.from('orders').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       publish((data || []).map(toOrder));
+      if (dashboardNotice) dashboardNotice.textContent = readyNotice;
     };
     const refreshOrdersSafely = async () => {
       if (refreshInFlight || document.hidden || !activeUserId) return;
@@ -170,8 +173,8 @@
         await fetchOrders();
         await fetchReviews().catch(error => console.error('Could not load customer reviews yet:', error));
       } catch (error) {
-        gate.hidden = false;
-        status.textContent = `Could not load shared orders: ${error.message}`;
+        console.error('Signed in, but could not load shared orders:', error);
+        if (dashboardNotice) dashboardNotice.textContent = `Signed in, but shared orders could not load: ${error.message}. The dashboard will retry automatically.`;
       } finally { syncing = false; }
       client.channel('ruchi-raagam-orders').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async payload => {
         try {
