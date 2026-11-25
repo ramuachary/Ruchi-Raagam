@@ -11,9 +11,9 @@
   <main class="shell">
     <header class="topbar">
       <a class="brand" href="index.html">Ruchi <span>Raagam</span></a>
-      <div class="top-actions"><button class="btn" id="enableNotifications" type="button">Enable notifications</button><button class="btn" id="clearCompleted" type="button">Clear completed</button></div>
+      <div class="top-actions"><button class="btn" id="enableNotifications" type="button">Enable notifications</button><button class="btn sound-toggle is-on" id="orderSoundToggle" type="button" aria-pressed="true" title="Mute new order sound"><span aria-hidden="true">🔔</span><span class="sound-toggle-label">Sound on</span></button><button class="btn" id="clearCompleted" type="button">Clear completed</button></div>
     </header>
-    <section class="heading"><div><div class="eyebrow">Restaurant operations</div><h1>Dashboard overview</h1></div><div class="date" id="today"></div></section>
+    <section class="heading"><div><div class="eyebrow">Restaurant operations</div><h1>Dashboard overview</h1><p class="welcome-subtitle" hidden>Here’s your restaurant at a glance.</p></div><div class="date" id="today"></div></section>
     <section class="metrics" aria-label="Order summary">
       <div class="metric new"><span>Total orders</span><strong id="newCount">0</strong></div>
       <div class="metric"><span>Total sales</span><strong id="activeCount">₹0</strong></div>

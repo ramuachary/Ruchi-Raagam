@@ -5,6 +5,8 @@
   const paymentStatusLabels = { unpaid: 'Payment pending', paid: 'Payment accepted', failed: 'Cancelled / failed', refunded: 'Refunded' };
   const terminal = new Set(['delivered', 'picked_up', 'cancelled']);
   const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value || 0));
+  let orderSoundEnabled = true;
+  try { orderSoundEnabled = localStorage.getItem('ruchi-raagam-order-sound') !== 'off'; } catch { /* Sound remains enabled for this session. */ }
   let notificationAudio;
   const unlockNotificationAudio = () => {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -17,6 +19,7 @@
   document.addEventListener('pointerdown', unlockNotificationAudio, { once: true, passive: true });
   document.addEventListener('keydown', unlockNotificationAudio, { once: true });
   const playNewOrderSound = () => {
+    if (!orderSoundEnabled) return;
     unlockNotificationAudio();
     if (!notificationAudio) return;
     const play = () => {
@@ -268,7 +271,9 @@
     adminLayout.main.classList.toggle('is-dashboard-home', page === 'dashboard');
     adminLayout.sidebar.querySelectorAll('[data-page]').forEach(button => button.classList.toggle('active', button.dataset.page === page));
     const heading = adminLayout.main.querySelector('.heading h1');
-    heading.textContent = ({dashboard:'Dashboard overview',orders:'Order list',menus:'Menu performance',customers:'Customers',reviews:'Customer reviews',analytics:'Analytics'})[page];
+    heading.textContent = ({dashboard:'Welcome to Ruchi Raagam',orders:'Order list',menus:'Menu performance',customers:'Customers',reviews:'Customer reviews',analytics:'Analytics'})[page];
+    const welcomeSubtitle = adminLayout.main.querySelector('.welcome-subtitle');
+    if (welcomeSubtitle) welcomeSubtitle.hidden = page !== 'dashboard';
     const showOrders = page === 'orders';
     const toolbar = adminLayout.main.querySelector('.toolbar');
     toolbar.hidden = page === 'reviews' || page === 'dashboard';
@@ -454,7 +459,7 @@
       const cancelled = orders.filter(order=>order.status==='cancelled').length;
       const totalCount = Math.max(orders.length,1);
       const p1 = Math.round(pending/totalCount*100), p2 = Math.round(delivered/totalCount*100), p3 = Math.max(0,100-p1-p2);
-      moduleView.innerHTML = `<section class="dashboard-welcome"><span class="welcome-bell" aria-hidden="true">♨</span><div><span class="eyebrow">WELCOME</span><h2>Welcome to Ruchi Raagam</h2><p>Your orders, sales, and restaurant activity are ready to review.</p></div></section><div class="overview-grid"><section class="overview-panel sales-panel"><div class="panel-title"><h3>▥ &nbsp; Sales overview</h3><span class="panel-range">Last 7 days</span></div>${chart}</section><section class="overview-panel recent-panel"><div class="panel-title"><h3>🛒 &nbsp; Recent orders</h3><button class="text-action" data-page="orders">View all →</button></div><div class="recent-table-wrap"><table class="recent-table"><thead><tr><th>#Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody>${recentRows||'<tr><td colspan="6" class="recent-empty">New orders appear here when customers place them.</td></tr>'}</tbody></table></div></section><section class="overview-panel quick-panel"><div class="quick-panel-title"><h3>⚡ &nbsp; Quick actions</h3></div><div class="quick-action-grid"><button data-page="menus"><span>♨</span>Menu performance</button><button data-page="orders"><span>🛒</span>View orders</button><button data-page="customers"><span>♟</span>Customer list</button><button data-page="analytics"><span>▥</span>Sales insights</button></div></section><section class="overview-panel dishes-panel"><div class="panel-title"><h3>★ &nbsp; Top selling dishes</h3><button class="text-action" data-page="menus">View all →</button></div><div class="dish-mini-grid">${dishCards||'<p class="recent-empty">Best sellers will appear after orders arrive.</p>'}</div></section><section class="overview-panel restaurant-stats-panel"><div class="panel-title"><h3>♟ &nbsp; Restaurant stats</h3></div><div class="stats-donut-row"><div class="stats-donut" style="${orders.length?`--pending:${p1}%;--delivered:${p2}%;--cancelled:${p3}%`:'background:conic-gradient(#e5ebe5 0 100%)'}"><strong>${orders.length}</strong><small>orders</small></div><ul><li><i class="legend-pending"></i>In progress <b>${orders.length?p1:0}%</b></li><li><i class="legend-delivered"></i>Delivered <b>${orders.length?p2:0}%</b></li><li><i class="legend-cancelled"></i>Cancelled <b>${orders.length?p3:0}%</b></li></ul></div></section></div>`;
+      moduleView.innerHTML = `<div class="overview-grid"><section class="overview-panel sales-panel"><div class="panel-title"><h3>▥ &nbsp; Sales overview</h3><span class="panel-range">Last 7 days</span></div>${chart}</section><section class="overview-panel recent-panel"><div class="panel-title"><h3>🛒 &nbsp; Recent orders</h3><button class="text-action" data-page="orders">View all →</button></div><div class="recent-table-wrap"><table class="recent-table"><thead><tr><th>#Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody>${recentRows||'<tr><td colspan="6" class="recent-empty">New orders appear here when customers place them.</td></tr>'}</tbody></table></div></section><section class="overview-panel quick-panel"><div class="quick-panel-title"><h3>⚡ &nbsp; Quick actions</h3></div><div class="quick-action-grid"><button data-page="menus"><span>♨</span>Menu performance</button><button data-page="orders"><span>🛒</span>View orders</button><button data-page="customers"><span>♟</span>Customer list</button><button data-page="analytics"><span>▥</span>Sales insights</button></div></section><section class="overview-panel dishes-panel"><div class="panel-title"><h3>★ &nbsp; Top selling dishes</h3><button class="text-action" data-page="menus">View all →</button></div><div class="dish-mini-grid">${dishCards||'<p class="recent-empty">Best sellers will appear after orders arrive.</p>'}</div></section><section class="overview-panel restaurant-stats-panel"><div class="panel-title"><h3>♟ &nbsp; Restaurant stats</h3></div><div class="stats-donut-row"><div class="stats-donut" style="${orders.length?`--pending:${p1}%;--delivered:${p2}%;--cancelled:${p3}%`:'background:conic-gradient(#e5ebe5 0 100%)'}"><strong>${orders.length}</strong><small>orders</small></div><ul><li><i class="legend-pending"></i>In progress <b>${orders.length?p1:0}%</b></li><li><i class="legend-delivered"></i>Delivered <b>${orders.length?p2:0}%</b></li><li><i class="legend-cancelled"></i>Cancelled <b>${orders.length?p3:0}%</b></li></ul></div></section></div>`;
     } else {
       const validOrders = orders.filter(order=>order.status!=='cancelled');
       const validRevenue = validOrders.reduce((sum,order)=>sum+Number(order.total||0),0);
@@ -608,6 +613,24 @@
   document.getElementById('clearCompleted').addEventListener('click', () => {
     const remaining = load().filter(order => !terminal.has(order.status));
     save(remaining); render(); toast('Completed orders cleared from this browser.');
+  });
+  const orderSoundToggle = document.getElementById('orderSoundToggle');
+  const updateOrderSoundToggle = () => {
+    if (!orderSoundToggle) return;
+    orderSoundToggle.classList.toggle('is-on', orderSoundEnabled);
+    orderSoundToggle.setAttribute('aria-pressed', String(orderSoundEnabled));
+    orderSoundToggle.setAttribute('aria-label', `New order sound ${orderSoundEnabled ? 'on' : 'off'}`);
+    orderSoundToggle.title = `Turn new order sound ${orderSoundEnabled ? 'off' : 'on'}`;
+    const label = orderSoundToggle.querySelector('.sound-toggle-label');
+    if (label) label.textContent = orderSoundEnabled ? 'Sound on' : 'Sound off';
+    const icon = orderSoundToggle.querySelector('[aria-hidden="true"]');
+    if (icon) icon.textContent = orderSoundEnabled ? '🔔' : '🔕';
+  };
+  updateOrderSoundToggle();
+  orderSoundToggle?.addEventListener('click', () => {
+    orderSoundEnabled = !orderSoundEnabled;
+    try { localStorage.setItem('ruchi-raagam-order-sound', orderSoundEnabled ? 'on' : 'off'); } catch { /* Keep the selection for this session. */ }
+    updateOrderSoundToggle();
   });
   document.getElementById('enableNotifications').addEventListener('click', async event => {
     if (!('Notification' in window)) { toast('Browser notifications are not supported here.'); return; }
